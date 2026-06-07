@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# built skill bundle (produced by `npm run pack:skill`)
+*.skill
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

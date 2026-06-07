@@ -152,6 +152,29 @@ Because cache hits are open, the workflow for a public instance is: **you** pre-
 
 ---
 
+## Claude skill
+
+A [Claude](https://claude.com/claude-code) skill lives in [`.claude/skills/banana-stand/`](.claude/skills/banana-stand) so you can ask for images in plain language ("I need a hero image of a coffee roastery") instead of hand-writing URLs. Claude picks the size + style, writes the prompt, and hands back a ready-to-paste `<img>`/Markdown/CSS snippet.
+
+It works in two modes:
+
+- **Claude Code (the doer)** — with a shell and `GEN_TOKEN` set, it **mints** brand-new images via `POST /api/generate` and returns the stable cached URL (so it then serves to everyone). Set the token in your environment; the skill never prints it:
+
+  ```bash
+  export GEN_TOKEN=your_secret          # from Passbolt, entry "Banana Stand"
+  # export BANANA_STAND_BASE_URL=https://your-instance.vercel.app  # optional override
+  ```
+
+- **claude.ai / Cowork (the planner)** — without a shell it coaches the prompt, picks size + style, reads the live [`/docs`](https://bananastandai.com/docs) to stay current, and returns the precise URL + snippet.
+
+In Claude Code the skill is picked up automatically from the repo. For other surfaces, build an installable bundle:
+
+```bash
+npm run pack:skill   # writes banana-stand.skill (a zip you can install)
+```
+
+---
+
 ## Moderation
 
 A pluggable hook runs before every generation (`lib/moderation.ts`), selected via `MODERATION_PROVIDER`:

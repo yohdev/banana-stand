@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "pack:skill": "cd .claude/skills/banana-stand && rm -f ../../../banana-stand.skill && zip -rq ../../../banana-stand.skill . -x '*.DS_Store' && echo 'wrote banana-stand.skill'"
   },
   "dependencies": {
     "@google/genai": "^2.8.0",
