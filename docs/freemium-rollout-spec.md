@@ -221,16 +221,21 @@ Because tier resolution is one stubbed function, going from free-only to paid ti
 
 ## Part 4 — Rollout Checklist
 
-- [ ] Add Vercel deploy button with `env=` prompts to README.
-- [ ] Document Gemini + Blob key provisioning in README.
+- [x] Add Vercel deploy button with `env=` prompts to README.
+- [x] Document Gemini + Blob key provisioning in README.
 - [ ] (Optional) Add pre-commit secret guard / gitleaks CI.
-- [ ] Provision Upstash Redis, add 4 env vars.
-- [ ] Add `lib/ratelimit.ts`.
-- [ ] Wire `getUserId` + cache-hit-free / miss-metered logic into `/i` and `/api/generate`.
-- [ ] Add usage response headers.
+- [ ] Provision Upstash Redis, add 4 env vars. *(infra step — code reads them, fails open if unset)*
+- [x] Add `lib/ratelimit.ts`. *(split into `peekRateLimit` / `consumeRateLimit`)*
+- [x] Wire `getUserId` + cache-hit-free / miss-metered logic into `/i` and `/api/generate`.
+- [x] Add usage response headers.
 - [ ] Deploy public free instance (5/day) at a controlled domain.
 - [ ] Publish ToS: AI-generated, no authentic-photo representation, fair-use limits.
 - [ ] (Deferred) Auth → Stripe → implement `getTier()`.
+
+> **Implementation note:** the pipeline was refactored into composable stages
+> (`resolveRequest` → `lookupCache` → `generateAndStore`) so routes can meter the
+> miss path *between* the cache check and generation. `runPipeline` remains as a
+> convenience wrapper. Rate limiting fails open when Upstash env vars are absent.
 
 ---
 

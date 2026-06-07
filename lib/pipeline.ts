@@ -23,6 +23,20 @@ export interface PipelineResult {
   id: string;
 }
 
+/** Validated, normalized request parameters plus the derived cache location. */
+export interface ResolvedRequest {
+  prompt: string;
+  width: number;
+  height: number;
+  style: Style;
+  seed: number;
+  fmt: ImageFormat;
+  quality: number;
+  model: string;
+  hash: string;
+  pathname: string;
+}
+
 export class ValidationError extends Error {
   constructor(message: string) {
     super(message);
@@ -30,60 +44,74 @@ export class ValidationError extends Error {
   }
 }
 
-export async function runPipeline(params: PipelineParams): Promise<PipelineResult> {
-  // Validate prompt
+const MODEL = () => process.env.IMAGE_MODEL ?? "gemini-2.0-flash-preview-image-generation";
+
+/**
+ * Validate + normalize inputs and compute the deterministic cache key.
+ * Throws ValidationError on bad input. Does no I/O.
+ */
+export function resolveRequest(params: PipelineParams): ResolvedRequest {
   if (!params.prompt || typeof params.prompt !== "string") {
     throw new ValidationError("prompt is required");
   }
-  const trimmedPrompt = params.prompt.trim();
-  if (trimmedPrompt.length === 0) throw new ValidationError("prompt cannot be empty");
-  if (trimmedPrompt.length > 1000) throw new ValidationError("prompt exceeds 1000 character limit");
+  const prompt = params.prompt.trim();
+  if (prompt.length === 0) throw new ValidationError("prompt cannot be empty");
+  if (prompt.length > 1000) throw new ValidationError("prompt exceeds 1000 character limit");
 
-  // Validate dimensions
   if (isNaN(params.width) || isNaN(params.height)) {
     throw new ValidationError("invalid dimensions");
   }
   const { width, height } = clampDimensions(params.width, params.height);
 
-  // Validate style
   const style: Style = params.style && isValidStyle(params.style) ? params.style : "web";
 
-  // Validate format
   const fmtRaw = params.fmt ?? "webp";
   if (!ALLOWED_FORMATS.includes(fmtRaw as ImageFormat)) {
     throw new ValidationError(`fmt must be one of: ${ALLOWED_FORMATS.join(", ")}`);
   }
   const fmt = fmtRaw as ImageFormat;
 
-  // Validate quality
   const quality = Math.max(1, Math.min(100, Math.round(params.quality ?? 82)));
-
-  // Seed
   const seed = typeof params.seed === "number" && !isNaN(params.seed) ? Math.round(params.seed) : 0;
+  const model = MODEL();
 
-  const model = process.env.IMAGE_MODEL ?? "gemini-2.0-flash-preview-image-generation";
-
-  const hash = buildCacheKey({ model, prompt: trimmedPrompt, width, height, style, seed, fmt, quality });
+  const hash = buildCacheKey({ model, prompt, width, height, style, seed, fmt, quality });
   const pathname = blobPathname(hash, fmt);
 
-  // Cache hit
-  const existingUrl = await checkBlob(pathname);
-  if (existingUrl) {
-    return { url: existingUrl, cached: true, width, height, model, id: hash };
-  }
+  return { prompt, width, height, style, seed, fmt, quality, model, hash, pathname };
+}
 
-  // Moderation
-  const mod = await moderatePrompt(trimmedPrompt);
+/** Returns the cached Blob URL if it exists, else null. */
+export async function lookupCache(req: ResolvedRequest): Promise<string | null> {
+  return checkBlob(req.pathname);
+}
+
+/** Moderate, generate via Gemini, store to Blob. Cache-miss path only. */
+export async function generateAndStore(req: ResolvedRequest): Promise<PipelineResult> {
+  const mod = await moderatePrompt(req.prompt);
   if (mod.blocked) {
     throw new ValidationError(`Prompt blocked: ${mod.reason ?? "policy violation"}`);
   }
 
-  // Optional generation token check (cache misses only)
-  // Checked by the route handler before calling pipeline when GEN_TOKEN is set.
+  const fullPrompt = buildPrompt(req.prompt, req.style, req.width, req.height);
+  const imageBuffer = await generateImage(fullPrompt, req.width, req.height, req.fmt, req.quality);
+  const url = await storeBlob(req.pathname, imageBuffer, mimeType(req.fmt));
 
-  const fullPrompt = buildPrompt(trimmedPrompt, style, width, height);
-  const imageBuffer = await generateImage(fullPrompt, width, height, fmt, quality);
-  const url = await storeBlob(pathname, imageBuffer, mimeType(fmt));
+  return { url, cached: false, width: req.width, height: req.height, model: req.model, id: req.hash };
+}
 
-  return { url, cached: false, width, height, model, id: hash };
+/**
+ * Full pipeline: resolve → cache lookup → generate on miss.
+ * Convenience wrapper; routes that need to meter the miss path
+ * should call the stages directly.
+ */
+export async function runPipeline(params: PipelineParams): Promise<PipelineResult> {
+  const req = resolveRequest(params);
+
+  const cachedUrl = await lookupCache(req);
+  if (cachedUrl) {
+    return { url: cachedUrl, cached: true, width: req.width, height: req.height, model: req.model, id: req.hash };
+  }
+
+  return generateAndStore(req);
 }

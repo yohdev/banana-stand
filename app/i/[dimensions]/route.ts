@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { runPipeline, ValidationError } from "@/lib/pipeline";
+import { resolveRequest, lookupCache, generateAndStore, ValidationError } from "@/lib/pipeline";
+import { peekRateLimit, consumeRateLimit } from "@/lib/ratelimit";
+import { getUserId, usageHeaders } from "@/lib/usage";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -39,36 +41,44 @@ export async function GET(
     return jsonError("prompt query parameter is required", 400);
   }
 
+  const userId = getUserId(req);
+
   try {
-    // For cache misses, require gen token if configured
-    // We attempt pipeline first; if it's a miss and token invalid, reject.
-    // To avoid generating before checking: we do a quick cache check here.
-    const { buildCacheKey, blobPathname } = await import("@/lib/cache-key");
-    const { checkBlob } = await import("@/lib/storage");
-    const { clampDimensions } = await import("@/lib/generate");
-    const { isValidStyle } = await import("@/lib/prompts");
+    const resolved = resolveRequest({ prompt, width, height, style, seed, fmt, quality });
 
-    const { width: w, height: h } = clampDimensions(width, height);
-    const s = isValidStyle(style) ? style : "web";
-    const q = Math.max(1, Math.min(100, Math.round(isNaN(quality) ? 82 : quality)));
-    const sd = isNaN(seed) ? 0 : Math.round(seed);
-    const model = process.env.IMAGE_MODEL ?? "gemini-2.0-flash-preview-image-generation";
+    // Cache hit — never metered, always served.
+    const cachedUrl = await lookupCache(resolved);
+    if (cachedUrl) {
+      const rl = await peekRateLimit(userId);
+      return NextResponse.redirect(cachedUrl, {
+        status: 302,
+        headers: {
+          ...usageHeaders(rl, "HIT"),
+          "Cache-Control": "public, max-age=31536000, immutable",
+        },
+      });
+    }
 
-    const hash = buildCacheKey({ model, prompt: prompt.trim(), width: w, height: h, style: s, seed: sd, fmt, quality: q });
-    const pathname = blobPathname(hash, fmt);
-    const existingUrl = await checkBlob(pathname);
-
-    if (!existingUrl && !checkGenToken(req)) {
+    // Cache miss — a real generation. Gate on shared secret + quota.
+    if (!checkGenToken(req)) {
       return jsonError("X-Gen-Token header required for new image generation", 401);
     }
 
-    const result = await runPipeline({ prompt, width, height, style, seed: sd, fmt, quality: q });
+    const rl = await consumeRateLimit(userId);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: `Daily limit (${rl.limit}) exceeded. Resets at ${rl.resetAt}` },
+        { status: 429, headers: usageHeaders(rl, "MISS") }
+      );
+    }
+
+    const result = await generateAndStore(resolved);
 
     return NextResponse.redirect(result.url, {
       status: 302,
       headers: {
+        ...usageHeaders(rl, "MISS"),
         "Cache-Control": "public, max-age=31536000, immutable",
-        "X-Cache": result.cached ? "HIT" : "MISS",
       },
     });
   } catch (err) {

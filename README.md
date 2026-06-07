@@ -42,6 +42,10 @@ cp .env.local.example .env.local
 | `BLOB_READ_WRITE_TOKEN` | Yes | Vercel Blob token (from your Vercel project) |
 | `IMAGE_MODEL` | No | Override default model (see below) |
 | `GEN_TOKEN` | No | Shared secret to protect cache-miss generation |
+| `UPSTASH_REDIS_REST_URL` | No | Upstash Redis URL — enables freemium daily quotas |
+| `UPSTASH_REDIS_REST_TOKEN` | No | Upstash Redis token |
+| `FREE_DAILY_LIMIT` | No | Free-tier daily generation cap (default 5) |
+| `PREMIUM_DAILY_LIMIT` | No | Premium-tier daily cap (default 1000) |
 
 ### 3. Run locally
 
@@ -51,9 +55,9 @@ npm run dev
 
 ### 4. Deploy to Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourorg/banana-stand)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yohdev/banana-stand&env=GEMINI_API_KEY,BLOB_READ_WRITE_TOKEN&envDescription=Gemini%20API%20key%20and%20Vercel%20Blob%20token)
 
-Add the same env vars in your Vercel project settings. Vercel Blob is provisioned automatically when you add the Blob storage integration.
+The deploy flow prompts for `GEMINI_API_KEY` and `BLOB_READ_WRITE_TOKEN` up front — Vercel stores them server-side and never echoes the values back. Vercel Blob is provisioned automatically when you add the Blob storage integration.
 
 ---
 
@@ -126,6 +130,28 @@ Set `IMAGE_MODEL` env var to override.
 - Cache hits: ~150ms (CDN redirect)
 
 ---
+
+## Freemium & rate limiting
+
+Optional daily quotas, off by default. To enable, provision a free [Upstash Redis](https://console.upstash.com) database and set `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`.
+
+- **Free tier** (default 5/day, by IP) — set with `FREE_DAILY_LIMIT`.
+- **Premium tier** (default 1000/day, by `x-api-key` header) — set with `PREMIUM_DAILY_LIMIT`.
+- **Cache hits are never metered.** Only real Gemini generations (cache misses) count against quota, so already-embedded `<img>` tags on live pages never break.
+
+Every response exposes quota state so a client can render "N images left today":
+
+```
+X-Cache: HIT | MISS
+X-Usage-Remaining: 3
+X-Daily-Limit: 5
+X-Reset-At: 2026-06-07T00:00:00Z
+X-Tier: free
+```
+
+Exceeding the limit returns **429** with a JSON error and reset time. If Upstash is not configured, rate limiting fails open (unlimited).
+
+Tier resolution lives in one stubbed function (`getTier` in `lib/ratelimit.ts`). Wiring in auth + Stripe later is a single-function change — see [`docs/freemium-rollout-spec.md`](docs/freemium-rollout-spec.md).
 
 ## Guardrails
 
