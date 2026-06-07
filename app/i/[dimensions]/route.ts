@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { resolveRequest, lookupCache, generateAndStore, ValidationError } from "@/lib/pipeline";
-import { peekRateLimit, consumeRateLimit } from "@/lib/ratelimit";
-import { getUserId, usageHeaders } from "@/lib/usage";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -10,6 +8,11 @@ function jsonError(message: string, status: number) {
   return NextResponse.json({ error: message }, { status });
 }
 
+/**
+ * Cache-miss generation is gated by GEN_TOKEN. If the env var is set, callers
+ * must send a matching `X-Gen-Token` header to generate a new image. Cache
+ * hits stay open so already-generated images keep serving to everyone.
+ */
 function checkGenToken(req: NextRequest): boolean {
   const secret = process.env.GEN_TOKEN;
   if (!secret) return true;
@@ -41,35 +44,24 @@ export async function GET(
     return jsonError("prompt query parameter is required", 400);
   }
 
-  const userId = getUserId(req);
-
   try {
     const resolved = resolveRequest({ prompt, width, height, style, seed, fmt, quality });
 
-    // Cache hit — never metered, always served.
+    // Cache hit — open to everyone, always served from the CDN.
     const cachedUrl = await lookupCache(resolved);
     if (cachedUrl) {
-      const rl = await peekRateLimit(userId);
       return NextResponse.redirect(cachedUrl, {
         status: 302,
         headers: {
-          ...usageHeaders(rl, "HIT"),
+          "X-Cache": "HIT",
           "Cache-Control": "public, max-age=31536000, immutable",
         },
       });
     }
 
-    // Cache miss — a real generation. Gate on shared secret + quota.
+    // Cache miss — a real generation. Gate on the shared secret.
     if (!checkGenToken(req)) {
       return jsonError("X-Gen-Token header required for new image generation", 401);
-    }
-
-    const rl = await consumeRateLimit(userId);
-    if (!rl.allowed) {
-      return NextResponse.json(
-        { error: `Daily limit (${rl.limit}) exceeded. Resets at ${rl.resetAt}` },
-        { status: 429, headers: usageHeaders(rl, "MISS") }
-      );
     }
 
     const result = await generateAndStore(resolved);
@@ -77,7 +69,7 @@ export async function GET(
     return NextResponse.redirect(result.url, {
       status: 302,
       headers: {
-        ...usageHeaders(rl, "MISS"),
+        "X-Cache": "MISS",
         "Cache-Control": "public, max-age=31536000, immutable",
       },
     });
