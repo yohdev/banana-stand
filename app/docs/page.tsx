@@ -1,56 +1,65 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import ThemeToggle from "../components/ThemeToggle";
+import CopyButton from "../components/CopyButton";
 
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <button
-      onClick={() => {
-        navigator.clipboard.writeText(text);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1500);
-      }}
-      style={{
-        position: "absolute",
-        top: 8,
-        right: 8,
-        padding: "4px 10px",
-        fontSize: 12,
-        background: copied ? "#16a34a" : "#333",
-        color: "white",
-        border: "none",
-        borderRadius: 4,
-        cursor: "pointer",
-      }}
-    >
-      {copied ? "Copied!" : "Copy"}
-    </button>
-  );
-}
+const GITHUB_URL = "https://github.com/yohdev/banana-stand";
 
-function Code({ children }: { children: string }) {
+function Code({ children, label = "Copy" }: { children: string; label?: string }) {
   return (
-    <div style={{ position: "relative", margin: "0.75rem 0" }}>
-      <pre
-        style={{
-          background: "#1e1e1e",
-          color: "#d4d4d4",
-          padding: "1rem 1rem 1rem 1rem",
-          paddingRight: "5rem",
-          borderRadius: 8,
-          overflowX: "auto",
-          fontSize: "0.85rem",
-          lineHeight: 1.5,
-          margin: 0,
-        }}
-      >
-        <code>{children}</code>
-      </pre>
-      <CopyButton text={children} />
+    <div className="codeblock" style={{ margin: "12px 0" }}>
+      <div className="copy-affordance">
+        <CopyButton text={children} label={label} />
+      </div>
+      <pre>{children}</pre>
     </div>
   );
 }
+
+const NAV = [
+  {
+    label: "Getting started",
+    links: [
+      { href: "#quickstart", text: "Quick start" },
+      { href: "#url", text: "The URL pattern" },
+    ],
+  },
+  {
+    label: "Reference",
+    links: [
+      { href: "#params", text: "Parameters" },
+      { href: "#styles", text: "Styles" },
+      { href: "#json", text: "JSON API" },
+      { href: "#health", text: "Health" },
+    ],
+  },
+  {
+    label: "Guides",
+    links: [
+      { href: "#claude", text: "Using with Claude Code" },
+      { href: "#access", text: "Access control" },
+      { href: "#caching", text: "Caching & limits" },
+    ],
+  },
+];
+
+const PARAMS: [string, string, string, string][] = [
+  ["prompt", "yes", "—", "Image description, max 1000 chars"],
+  ["style", "no", "web", "Visual preset — see Styles"],
+  ["seed", "no", "0", "Change for a different image, same prompt"],
+  ["fmt", "no", "webp", "webp | jpeg | png"],
+  ["q", "no", "82", "Quality 1–100 (ignored for png)"],
+];
+
+const STYLES: [string, string][] = [
+  ["web", "Default — neutral, clean, professional. Reads well behind text."],
+  ["photographic", "Realistic photo style, natural lighting."],
+  ["illustration", "Flat / semi-flat digital illustration."],
+  ["abstract", "Flowing shapes, decorative backgrounds."],
+  ["3d", "Photoreal 3D render, studio lighting."],
+  ["minimal", "Ample white space, muted palette."],
+];
 
 export default function DocsPage() {
   const [base, setBase] = useState("https://your-instance.vercel.app");
@@ -60,130 +69,168 @@ export default function DocsPage() {
   }, []);
 
   return (
-    <main style={{ fontFamily: "system-ui, sans-serif", maxWidth: 820, margin: "0 auto", padding: "2rem 1.5rem 5rem" }}>
-      <a href="/" style={{ color: "#0070f3", textDecoration: "none", fontSize: "0.9rem" }}>
-        ← Back home
-      </a>
-
-      <h1 style={{ marginTop: "1rem" }}>🍌 Banana Stand — API Docs</h1>
-      <p style={{ fontSize: "1.05rem", color: "#444" }}>
-        AI placeholder images from a URL. Drop a link into an <code>&lt;img&gt;</code> tag and get a
-        contextually appropriate, web-ready image — generated once, cached forever on a CDN.
-      </p>
-
-      {/* TOC */}
-      <nav
-        style={{
-          background: "#f6f8fa",
-          borderRadius: 8,
-          padding: "1rem 1.25rem",
-          margin: "1.5rem 0",
-          fontSize: "0.95rem",
-        }}
-      >
-        <strong>On this page</strong>
-        <ul style={{ margin: "0.5rem 0 0", paddingLeft: "1.2rem", lineHeight: 1.9 }}>
-          <li><a href="#quickstart" style={{ color: "#0070f3" }}>Quick start</a></li>
-          <li><a href="#url" style={{ color: "#0070f3" }}>The URL pattern</a></li>
-          <li><a href="#params" style={{ color: "#0070f3" }}>Parameters</a></li>
-          <li><a href="#styles" style={{ color: "#0070f3" }}>Styles</a></li>
-          <li><a href="#examples" style={{ color: "#0070f3" }}>Examples</a></li>
-          <li><a href="#json" style={{ color: "#0070f3" }}>JSON API</a></li>
-          <li><a href="#claude" style={{ color: "#0070f3" }}>Using with Claude Code</a></li>
-          <li><a href="#access" style={{ color: "#0070f3" }}>Access control</a></li>
-          <li><a href="#caching" style={{ color: "#0070f3" }}>Caching &amp; limits</a></li>
-        </ul>
-      </nav>
-
-      {/* Quick start */}
-      <section id="quickstart">
-        <h2>Quick start</h2>
-        <p>Paste this into any HTML page and an image appears — no API key, no JavaScript:</p>
-        <Code>{`<img src="${base}/i/1200x600?prompt=modern+fintech+dashboard+hero&style=photographic" />`}</Code>
-        <p>That&apos;s the entire integration. The first load generates the image; every load after is an instant CDN cache hit.</p>
-      </section>
-
-      {/* URL pattern */}
-      <section id="url">
-        <h2>The URL pattern</h2>
-        <Code>{`${base}/i/{width}x{height}?prompt={description}&style={style}`}</Code>
-        <ul style={{ lineHeight: 1.8 }}>
-          <li><code>{"{width}x{height}"}</code> — exact pixel dimensions, e.g. <code>1200x600</code></li>
-          <li><code>prompt</code> — what the image should show (URL-encode spaces as <code>+</code>)</li>
-          <li><code>style</code> — optional visual preset (see below)</li>
-        </ul>
-      </section>
-
-      {/* Params */}
-      <section id="params">
-        <h2>Parameters</h2>
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ borderCollapse: "collapse", width: "100%", fontSize: "0.9rem" }}>
-            <thead>
-              <tr style={{ background: "#f0f0f0", textAlign: "left" }}>
-                <th style={{ padding: 8, border: "1px solid #ddd" }}>Param</th>
-                <th style={{ padding: 8, border: "1px solid #ddd" }}>Required</th>
-                <th style={{ padding: 8, border: "1px solid #ddd" }}>Default</th>
-                <th style={{ padding: 8, border: "1px solid #ddd" }}>Notes</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                ["prompt", "Yes", "—", "Image description, max 1000 chars"],
-                ["style", "No", "web", "web | photographic"],
-                ["seed", "No", "0", "Change for a different image, same prompt"],
-                ["fmt", "No", "webp", "webp | jpeg | png"],
-                ["q", "No", "82", "Quality 1–100 (ignored for png)"],
-              ].map(([p, r, d, n]) => (
-                <tr key={p}>
-                  <td style={{ padding: 8, border: "1px solid #ddd" }}><code>{p}</code></td>
-                  <td style={{ padding: 8, border: "1px solid #ddd" }}>{r}</td>
-                  <td style={{ padding: 8, border: "1px solid #ddd" }}><code>{d}</code></td>
-                  <td style={{ padding: 8, border: "1px solid #ddd" }}>{n}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+    <>
+      <header className="nav">
+        <div className="container nav-inner">
+          <a href="/" className="brand">
+            <span aria-hidden="true">🍌</span> Banana Stand
+          </a>
+          <nav className="nav-links">
+            <a className="navlink" href="/">
+              Home
+            </a>
+            <a className="navlink" href={GITHUB_URL}>
+              GitHub
+            </a>
+            <a className="btn btn-accent keep" href="/contributors">
+              Contributors
+            </a>
+            <ThemeToggle />
+          </nav>
         </div>
-        <p style={{ fontSize: "0.85rem", color: "#666" }}>
-          Dimensions are clamped to 64–2048 per side, ~4 megapixels max.
-        </p>
-      </section>
+      </header>
 
-      {/* Styles */}
-      <section id="styles">
-        <h2>Styles</h2>
-        <ul style={{ lineHeight: 1.8 }}>
-          <li><code>web</code> <em>(default)</em> — neutral, clean, professional. Good behind text.</li>
-          <li><code>photographic</code> — realistic photo style, natural lighting.</li>
-        </ul>
-      </section>
+      <div className="docs">
+        {/* sidebar */}
+        <aside className="docs-side" aria-label="Docs navigation">
+          {NAV.map((group) => (
+            <div key={group.label}>
+              <div className="group-label">{group.label}</div>
+              {group.links.map((l) => (
+                <a key={l.href} href={l.href}>
+                  {l.text}
+                </a>
+              ))}
+            </div>
+          ))}
+        </aside>
 
-      {/* Examples */}
-      <section id="examples">
-        <h2>Examples</h2>
+        {/* content */}
+        <main className="docs-content">
+          <div className="docs-hero">
+            <span className="eyebrow">Documentation</span>
+            <h1 className="display" style={{ fontSize: "clamp(2rem, 4vw, 2.8rem)", marginBottom: 12 }}>
+              API reference
+            </h1>
+            <p className="lede" style={{ maxWidth: "60ch" }}>
+              AI placeholder images from a URL. Drop a link into an{" "}
+              <code>&lt;img&gt;</code> tag and get a contextually appropriate,
+              web-ready image — generated once, cached forever on a CDN.
+            </p>
+            <div className="callout" style={{ marginTop: 20 }}>
+              <span aria-hidden="true">🔗</span>
+              <span>
+                Base URL for this instance: <code>{base}</code>
+              </span>
+            </div>
+          </div>
 
-        <h3>Hero banner</h3>
-        <Code>{`<img src="${base}/i/1600x700?prompt=modern+SaaS+product+hero+dashboard&style=photographic" />`}</Code>
+          {/* Quick start */}
+          <section id="quickstart">
+            <h2>Quick start</h2>
+            <p>Paste this into any HTML page and an image appears — no API key, no JavaScript:</p>
+            <Code>{`<img src="${base}/i/1200x600?prompt=modern+fintech+dashboard+hero&style=photographic" />`}</Code>
+            <p>
+              That&apos;s the entire integration. The first load generates the image; every load
+              after is an instant CDN cache hit.
+            </p>
+          </section>
 
-        <h3>Team / about photo</h3>
-        <Code>{`<img src="${base}/i/800x600?prompt=diverse+team+collaborating+in+bright+office&style=photographic" />`}</Code>
+          {/* URL pattern */}
+          <section id="url">
+            <h2>The URL pattern</h2>
+            <Code>{`${base}/i/{width}x{height}?prompt={description}&style={style}`}</Code>
+            <ul>
+              <li>
+                <code>{"{width}x{height}"}</code> — exact pixel dimensions, e.g. <code>1200x600</code>
+              </li>
+              <li>
+                <code>prompt</code> — what the image should show (URL-encode spaces as <code>+</code>)
+              </li>
+              <li>
+                <code>style</code> — optional visual preset (see below)
+              </li>
+            </ul>
+          </section>
 
-        <h3>CSS background</h3>
-        <Code>{`.hero {
-  background-image: url("${base}/i/1920x1080?prompt=abstract+blue+gradient+tech+background");
+          {/* Parameters */}
+          <section id="params">
+            <h2>Parameters</h2>
+            <div className="card" style={{ overflow: "hidden" }}>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Param</th>
+                    <th>Required</th>
+                    <th>Default</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {PARAMS.map(([p, r, d, n]) => (
+                    <tr key={p}>
+                      <td><code>{p}</code></td>
+                      <td>{r === "yes" ? <span className="tag">required</span> : "no"}</td>
+                      <td><code>{d}</code></td>
+                      <td>{n}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="muted" style={{ fontSize: "0.9rem", marginTop: 12 }}>
+              Dimensions are clamped to 64–2048 per side, ~4 megapixels max.
+            </p>
+          </section>
+
+          {/* Styles */}
+          <section id="styles">
+            <h2>Styles</h2>
+            <p>
+              A server-side prompt layer turns terse prompts into clean web imagery. Select with{" "}
+              <code>style=</code>:
+            </p>
+            <div className="card" style={{ overflow: "hidden" }}>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Style</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {STYLES.map(([s, d]) => (
+                    <tr key={s}>
+                      <td><code>{s}</code></td>
+                      <td>{d}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <h3>Examples</h3>
+            <Code>{`<!-- Hero banner -->
+<img src="${base}/i/1600x700?prompt=modern+SaaS+product+hero+dashboard&style=photographic" />
+
+<!-- Team / about photo -->
+<img src="${base}/i/800x600?prompt=diverse+team+collaborating+in+bright+office&style=photographic" />
+
+<!-- CSS background -->
+.hero {
+  background-image: url("${base}/i/1920x1080?prompt=abstract+blue+gradient+tech+background&style=abstract");
   background-size: cover;
-}`}</Code>
+}
 
-        <h3>Different image, same prompt (seed)</h3>
-        <Code>{`${base}/i/600x400?prompt=coffee+shop+interior&seed=2`}</Code>
-      </section>
+<!-- Different image, same prompt -->
+${base}/i/600x400?prompt=coffee+shop+interior&seed=2`}</Code>
+          </section>
 
-      {/* JSON API */}
-      <section id="json">
-        <h2>JSON API</h2>
-        <p>When you want the URL handed back instead of generating on load:</p>
-        <Code>{`curl -X POST ${base}/api/generate \\
+          {/* JSON API */}
+          <section id="json">
+            <h2>JSON API</h2>
+            <p>When you want the URL handed back instead of generating on load:</p>
+            <Code>{`curl -X POST ${base}/api/generate \\
   -H "Content-Type: application/json" \\
   -d '{
     "prompt": "modern fintech dashboard hero",
@@ -191,8 +238,8 @@ export default function DocsPage() {
     "height": 600,
     "style": "photographic"
   }'`}</Code>
-        <p>Response:</p>
-        <Code>{`{
+            <p>Response:</p>
+            <Code label="Copy">{`{
   "url": "https://...blob.vercel-storage.com/cache/abc123.webp",
   "cached": false,
   "width": 1200,
@@ -200,19 +247,24 @@ export default function DocsPage() {
   "model": "gemini-2.5-flash-image",
   "id": "abc123..."
 }`}</Code>
-        <p style={{ fontSize: "0.9rem", color: "#444" }}>
-          Health check: <code>GET {base}/api/health</code>
-        </p>
-      </section>
+          </section>
 
-      {/* Claude Code */}
-      <section id="claude">
-        <h2>Using with Claude Code</h2>
-        <p>
-          Drop this snippet into your project&apos;s <code>CLAUDE.md</code> and Claude Code will use
-          Banana Stand automatically whenever it adds images to a page:
-        </p>
-        <Code>{`# Placeholder Images
+          {/* Health */}
+          <section id="health">
+            <h2>Health</h2>
+            <p>Liveness check and the active model:</p>
+            <Code>{`curl ${base}/api/health
+# → { "ok": true, "model": "gemini-2.5-flash-image" }`}</Code>
+          </section>
+
+          {/* Claude Code */}
+          <section id="claude">
+            <h2>Using with Claude Code</h2>
+            <p>
+              Drop this into your project&apos;s <code>CLAUDE.md</code> and Claude Code uses Banana
+              Stand automatically whenever it adds images:
+            </p>
+            <Code label="Copy snippet">{`# Placeholder Images
 
 For placeholder images on this site, use the Banana Stand API.
 Write image URLs as:
@@ -223,62 +275,83 @@ Place them directly in <img src> or CSS background-image. Choose
 dimensions that match the layout slot. Same prompt + size always
 returns the same cached image, so reuse URLs for stable pages.
 
-Styles: web (default), photographic.
+Styles: web (default), photographic, illustration, abstract, 3d, minimal.
 Tips: encode spaces as +, add &seed=2 for a variant.`}</Code>
-        <p style={{ fontSize: "0.9rem", color: "#444" }}>
-          No SDK, no MCP, no keys in the page. Claude writes the URL, the page renders, the service
-          does the rest.
-        </p>
-      </section>
+            <p className="muted" style={{ fontSize: "0.92rem" }}>
+              No SDK, no keys in the page. Claude writes the URL, the page renders, the service does
+              the rest.
+            </p>
+          </section>
 
-      {/* Access control */}
-      <section id="access">
-        <h2>Access control</h2>
-        <p>
-          Generating a new image calls Gemini and costs money. Set a{" "}
-          <code>GEN_TOKEN</code> env var on your instance to gate new generations:
-        </p>
-        <ul style={{ lineHeight: 1.8 }}>
-          <li><strong>Cache hits</strong> are always open — already-generated URLs serve to anyone, no token. Embedded <code>&lt;img&gt;</code> tags never break.</li>
-          <li><strong>Cache misses</strong> require a matching <code>X-Gen-Token</code> header when <code>GEN_TOKEN</code> is set, otherwise they return <code>401</code>.</li>
-        </ul>
-        <Code>{`# Generating a new image only works with the secret
+          {/* Access control */}
+          <section id="access">
+            <h2>Access control</h2>
+            <p>
+              Generating a new image calls Gemini and costs money. Set a <code>GEN_TOKEN</code> env
+              var on your instance to gate new generations:
+            </p>
+            <ul>
+              <li>
+                <strong>Cache hits</strong> are always open — already-generated URLs serve to
+                anyone, no token. Embedded <code>&lt;img&gt;</code> tags never break.
+              </li>
+              <li>
+                <strong>Cache misses</strong> require a matching <code>X-Gen-Token</code> header
+                when <code>GEN_TOKEN</code> is set, otherwise they return <code>401</code>.
+              </li>
+            </ul>
+            <Code>{`# Generating a new image only works with the secret
 curl -H "X-Gen-Token: YOUR_SECRET" \\
   "${base}/i/1200x600?prompt=team+in+a+bright+office"`}</Code>
-        <p style={{ fontSize: "0.9rem", color: "#444" }}>
-          Set <code>GEN_TOKEN</code> in your Vercel project (Production scope) and
-          redeploy. Leave it unset for a private/self-host instance where anyone may
-          generate.
-        </p>
-      </section>
+            <div className="callout">
+              <span aria-hidden="true">🔒</span>
+              <span>
+                Set <code>GEN_TOKEN</code> in your Vercel project (Production scope) and redeploy.
+                Leave it unset for a private/self-host instance where anyone may generate.
+              </span>
+            </div>
+          </section>
 
-      {/* Caching */}
-      <section id="caching">
-        <h2>Caching &amp; limits</h2>
-        <ul style={{ lineHeight: 1.8 }}>
-          <li><strong>Deterministic:</strong> same params → same image, forever. Pages stay stable across reloads and deploys.</li>
-          <li><strong>Cache hits</strong> are instant CDN redirects (~150ms) and don&apos;t count against quota.</li>
-          <li><strong>Cache misses</strong> generate in ~2–10s, then are cached.</li>
-          <li><strong>Generation control:</strong> set <code>GEN_TOKEN</code> to require <code>X-Gen-Token</code> on new generations (see <a href="#access" style={{ color: "#0070f3" }}>Access control</a>). Cache hits are always open.</li>
-        </ul>
-        <p
-          style={{
-            marginTop: "1.5rem",
-            fontSize: "0.85rem",
-            color: "#666",
-            borderTop: "1px solid #eee",
-            paddingTop: "1rem",
-          }}
-        >
-          ⚠️ Images are AI-generated and carry an invisible SynthID watermark. Don&apos;t present them
-          as authentic photography.
-        </p>
-      </section>
+          {/* Caching & limits */}
+          <section id="caching">
+            <h2>Caching &amp; limits</h2>
+            <ul>
+              <li>
+                <strong>Deterministic:</strong> same params → same image, forever. Pages stay
+                stable across reloads and deploys.
+              </li>
+              <li>
+                <strong>Cache hits</strong> are instant CDN redirects (~150ms) and don&apos;t call
+                Gemini.
+              </li>
+              <li>
+                <strong>Cache misses</strong> generate in ~2–10s, then are cached.
+              </li>
+              <li>
+                <strong>Generation control:</strong> set <code>GEN_TOKEN</code> to require{" "}
+                <code>X-Gen-Token</code> on new generations (see{" "}
+                <a href="#access" style={{ borderBottom: "1px solid var(--border)" }}>
+                  Access control
+                </a>
+                ). Cache hits are always open.
+              </li>
+            </ul>
+            <div className="disclosure" style={{ marginTop: 16 }}>
+              ⚠️ Images are AI-generated and carry an invisible SynthID watermark. Don&apos;t present
+              them as authentic photography.
+            </div>
+          </section>
 
-      <div style={{ marginTop: "2rem", display: "flex", gap: "1rem" }}>
-        <a href="/test" style={{ color: "#0070f3" }}>🧪 Try the test page →</a>
-        <a href="https://github.com/yohdev/banana-stand" style={{ color: "#0070f3" }}>View on GitHub →</a>
+          <p className="muted" style={{ marginTop: 48, display: "flex", gap: 18 }}>
+            <a href="/test" style={{ borderBottom: "1px solid var(--border)" }}>
+              Try the test page →
+            </a>
+            <a href={GITHUB_URL} style={{ borderBottom: "1px solid var(--border)" }}>
+              View on GitHub →
+            </a>
+          </p>
+        </main>
       </div>
-    </main>
+    </>
   );
 }
