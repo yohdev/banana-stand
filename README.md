@@ -10,6 +10,8 @@ An open-source, AI-powered placeholder image service. Write a URL, get an image 
 
 No SDK, no API keys in your page, no JavaScript. Just a URL in an `<img>` tag.
 
+**Live instance:** [bananastandai.com](https://bananastandai.com) · **Docs:** [bananastandai.com/docs](https://bananastandai.com/docs) · **Contributors & roadmap:** [bananastandai.com/contributors](https://bananastandai.com/contributors)
+
 ---
 
 ## How it works
