@@ -31,7 +31,7 @@ export async function generateImage(
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_API_KEY is not set");
 
-  const model = process.env.IMAGE_MODEL ?? "gemini-2.0-flash-preview-image-generation";
+  const model = process.env.IMAGE_MODEL ?? "gemini-2.5-flash-preview-image";
 
   const client = new GoogleGenAI({ apiKey });
 
