@@ -491,6 +491,76 @@ h3 {
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+@media (max-width: 720px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- contributors ---------- */
+.people {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+.person {
+  display: flex;
+  gap: 14px;
+  padding: 18px;
+  align-items: flex-start;
+}
+.person .avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  object-fit: cover;
+}
+.person .pname {
+  font-weight: 600;
+  line-height: 1.2;
+}
+.person .plogin {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+.person .pbio {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-top: 8px;
+}
+.person .pgh {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+.person .pgh:hover {
+  border-color: var(--accent);
+}
+.roadmap-item {
+  padding: 22px;
+}
+.roadmap-item .tag {
+  margin-bottom: 12px;
+}
+.roadmap-item h3 {
+  margin-bottom: 8px;
+}
+.roadmap-item p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
 .feature {
   padding: 24px;
 }
