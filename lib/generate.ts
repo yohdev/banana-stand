@@ -59,6 +59,15 @@ function getClient(): GoogleGenAI {
   });
 }
 
+function isRetryable(err: unknown): boolean {
+  const status = (err as { status?: number })?.status;
+  if (status === 429 || status === 503) return true;
+  const msg = (err as { message?: string })?.message ?? "";
+  return msg.includes("RESOURCE_EXHAUSTED") || msg.includes("UNAVAILABLE") || msg.includes("429");
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 export async function generateImage(
   prompt: string,
   width: number,
@@ -69,13 +78,34 @@ export async function generateImage(
   const model = process.env.IMAGE_MODEL ?? "gemini-2.5-flash-image";
   const client = getClient();
 
-  const response = await client.models.generateContent({
-    model,
-    contents: [{ role: "user", parts: [{ text: prompt }] }],
-    config: {
-      responseModalities: ["IMAGE"],
-    },
-  });
+  // Vertex Gemini image models use dynamic shared quota; 429s are often
+  // transient. Retry with exponential backoff before giving up.
+  const maxAttempts = 5;
+  let response;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      response = await client.models.generateContent({
+        model,
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        config: {
+          responseModalities: ["IMAGE"],
+        },
+      });
+      break;
+    } catch (err) {
+      if (attempt < maxAttempts && isRetryable(err)) {
+        const delay = Math.min(1000 * 2 ** (attempt - 1), 8000) + Math.random() * 500;
+        console.warn(`[generate] retryable error (attempt ${attempt}/${maxAttempts}), waiting ${Math.round(delay)}ms`);
+        await sleep(delay);
+        continue;
+      }
+      throw err;
+    }
+  }
+
+  if (!response) {
+    throw new Error("Image generation failed after retries (quota exhausted)");
+  }
 
   const parts = response.candidates?.[0]?.content?.parts ?? [];
   const imagePart = parts.find((p) => p.inlineData?.data);
