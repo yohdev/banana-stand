@@ -1,4 +1,3 @@
-import { GoogleAuth } from "google-auth-library";
 import sharp from "sharp";
 
 const MAX_MEGAPIXELS = 4_000_000;
@@ -21,40 +20,6 @@ export function clampDimensions(w: number, h: number): { width: number; height: 
   return { width, height };
 }
 
-function getCredentials(): Record<string, unknown> {
-  const credStr = process.env.GOOGLE_CLOUD_CREDENTIALS;
-  if (!credStr) {
-    throw new Error("GOOGLE_CLOUD_CREDENTIALS env var is not set");
-  }
-
-  try {
-    return JSON.parse(credStr) as Record<string, unknown>;
-  } catch (err) {
-    throw new Error("GOOGLE_CLOUD_CREDENTIALS is not valid JSON");
-  }
-}
-
-async function getAccessToken(): Promise<string> {
-  const credStr = process.env.GOOGLE_CLOUD_CREDENTIALS;
-  if (!credStr) {
-    throw new Error("GOOGLE_CLOUD_CREDENTIALS env var is not set");
-  }
-
-  const auth = new GoogleAuth({
-    credentials: JSON.parse(credStr) as Record<string, unknown>,
-    scopes: ["https://www.googleapis.com/auth/generative-language"],
-  });
-
-  const client = await auth.getClient();
-  const token = await client.getAccessToken();
-
-  if (!token.token) {
-    throw new Error("Failed to obtain access token from service account");
-  }
-
-  return token.token;
-}
-
 export async function generateImage(
   prompt: string,
   width: number,
@@ -62,10 +27,10 @@ export async function generateImage(
   format: ImageFormat,
   quality: number
 ): Promise<Buffer> {
-  const model = process.env.IMAGE_MODEL ?? "gemini-2.5-flash-preview-image";
-  const projectId = getCredentials().project_id as string;
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error("GEMINI_API_KEY is not set");
 
-  const accessToken = await getAccessToken();
+  const model = process.env.IMAGE_MODEL ?? "gemini-2.5-flash-preview-image";
 
   const requestBody = {
     contents: [
@@ -75,34 +40,39 @@ export async function generateImage(
       },
     ],
     generationConfig: {
-      maxOutputTokens: 1024,
+      responseModalities: ["IMAGE"],
     },
   };
 
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/projects/${projectId}/models/${model}:generateContent`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
     {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(requestBody),
     }
   );
 
   if (!res.ok) {
-    const error = await res.text();
-    throw new Error(`Gemini API error (${res.status}): ${error}`);
+    const errText = await res.text();
+    throw new Error(`Gemini API error (${res.status}): ${errText}`);
   }
 
   const data = (await res.json()) as Record<string, unknown>;
   const candidates = data.candidates as unknown[];
   const candidate = candidates?.[0] as Record<string, unknown>;
-  const parts = candidate?.content as Record<string, unknown>;
-  const partArray = parts?.parts as unknown[];
-  const part = partArray?.[0] as Record<string, unknown>;
-  const inlineData = part?.inlineData as Record<string, unknown>;
+  const content = candidate?.content as Record<string, unknown>;
+  const partArray = content?.parts as unknown[];
+
+  // Find the part that actually carries image bytes.
+  let inlineData: Record<string, unknown> | undefined;
+  for (const p of partArray ?? []) {
+    const candidatePart = (p as Record<string, unknown>)?.inlineData as Record<string, unknown>;
+    if (candidatePart?.data) {
+      inlineData = candidatePart;
+      break;
+    }
+  }
 
   if (!inlineData?.data) {
     throw new Error("Gemini returned no image data");
