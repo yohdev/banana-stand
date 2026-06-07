@@ -40,6 +40,37 @@ function ghHeaders(): Record<string, string> {
   return headers;
 }
 
+// Contributors to always feature, even before they've landed a commit.
+const ENSURE_INCLUDED = ["furiouzzwill"];
+// Contributors pinned to the end of the list, regardless of commit count.
+const PIN_LAST = ["claude"];
+
+async function fetchProfile(
+  login: string
+): Promise<{ name: string | null; bio: string | null; avatar_url: string; html_url: string } | null> {
+  try {
+    const res = await fetch(`https://api.github.com/users/${login}`, {
+      headers: ghHeaders(),
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return null;
+    const u = (await res.json()) as {
+      name?: string;
+      bio?: string;
+      avatar_url?: string;
+      html_url?: string;
+    };
+    return {
+      name: u.name ?? null,
+      bio: u.bio ?? null,
+      avatar_url: u.avatar_url ?? "",
+      html_url: u.html_url ?? `https://github.com/${login}`,
+    };
+  } catch {
+    return null;
+  }
+}
+
 async function getContributors(): Promise<Person[]> {
   try {
     const res = await fetch(
@@ -53,34 +84,42 @@ async function getContributors(): Promise<Person[]> {
       .filter((c) => c.type !== "Bot" && !c.login.endsWith("[bot]"))
       .slice(0, 24);
 
-    // Enrich with name + bio from each user's profile.
-    return Promise.all(
-      humans.map(async (c) => {
-        let name: string | null = null;
-        let bio: string | null = null;
-        try {
-          const ures = await fetch(`https://api.github.com/users/${c.login}`, {
-            headers: ghHeaders(),
-            next: { revalidate: 3600 },
-          });
-          if (ures.ok) {
-            const u = (await ures.json()) as { name?: string; bio?: string };
-            name = u.name ?? null;
-            bio = u.bio ?? null;
-          }
-        } catch {
-          /* fall back to login only */
-        }
+    // Make sure featured contributors appear even if they're not committers yet.
+    const present = new Set(humans.map((c) => c.login.toLowerCase()));
+    const extras: GHContributor[] = ENSURE_INCLUDED.filter(
+      (login) => !present.has(login.toLowerCase())
+    ).map((login) => ({
+      login,
+      avatar_url: "",
+      html_url: `https://github.com/${login}`,
+      contributions: 0,
+      type: "User",
+    }));
+
+    // Enrich everyone with name + bio (and avatar/url for manual extras).
+    const people = await Promise.all(
+      [...humans, ...extras].map(async (c): Promise<Person> => {
+        const profile = await fetchProfile(c.login);
         return {
           login: c.login,
-          name,
-          bio,
-          avatar_url: c.avatar_url,
+          name: profile?.name ?? null,
+          bio: profile?.bio ?? null,
+          avatar_url: c.avatar_url || profile?.avatar_url || "",
           html_url: c.html_url,
           contributions: c.contributions,
         };
       })
     );
+
+    // Pin certain logins to the end; everyone else keeps contribution order.
+    const isPinned = (p: Person) =>
+      PIN_LAST.some((l) => l.toLowerCase() === p.login.toLowerCase());
+    const head = people.filter((p) => !isPinned(p));
+    const tail = PIN_LAST.map((l) =>
+      people.find((p) => p.login.toLowerCase() === l.toLowerCase())
+    ).filter((p): p is Person => Boolean(p));
+
+    return [...head, ...tail];
   } catch {
     return [];
   }
