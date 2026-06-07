@@ -90,6 +90,7 @@ export default function DocsPage() {
           <li><a href="#examples" style={{ color: "#0070f3" }}>Examples</a></li>
           <li><a href="#json" style={{ color: "#0070f3" }}>JSON API</a></li>
           <li><a href="#claude" style={{ color: "#0070f3" }}>Using with Claude Code</a></li>
+          <li><a href="#access" style={{ color: "#0070f3" }}>Access control</a></li>
           <li><a href="#caching" style={{ color: "#0070f3" }}>Caching &amp; limits</a></li>
         </ul>
       </nav>
@@ -230,6 +231,27 @@ Tips: encode spaces as +, add &seed=2 for a variant.`}</Code>
         </p>
       </section>
 
+      {/* Access control */}
+      <section id="access">
+        <h2>Access control</h2>
+        <p>
+          Generating a new image calls Gemini and costs money. Set a{" "}
+          <code>GEN_TOKEN</code> env var on your instance to gate new generations:
+        </p>
+        <ul style={{ lineHeight: 1.8 }}>
+          <li><strong>Cache hits</strong> are always open — already-generated URLs serve to anyone, no token. Embedded <code>&lt;img&gt;</code> tags never break.</li>
+          <li><strong>Cache misses</strong> require a matching <code>X-Gen-Token</code> header when <code>GEN_TOKEN</code> is set, otherwise they return <code>401</code>.</li>
+        </ul>
+        <Code>{`# Generating a new image only works with the secret
+curl -H "X-Gen-Token: YOUR_SECRET" \\
+  "${base}/i/1200x600?prompt=team+in+a+bright+office"`}</Code>
+        <p style={{ fontSize: "0.9rem", color: "#444" }}>
+          Set <code>GEN_TOKEN</code> in your Vercel project (Production scope) and
+          redeploy. Leave it unset for a private/self-host instance where anyone may
+          generate.
+        </p>
+      </section>
+
       {/* Caching */}
       <section id="caching">
         <h2>Caching &amp; limits</h2>
@@ -237,7 +259,7 @@ Tips: encode spaces as +, add &seed=2 for a variant.`}</Code>
           <li><strong>Deterministic:</strong> same params → same image, forever. Pages stay stable across reloads and deploys.</li>
           <li><strong>Cache hits</strong> are instant CDN redirects (~150ms) and don&apos;t count against quota.</li>
           <li><strong>Cache misses</strong> generate in ~2–10s, then are cached.</li>
-          <li><strong>Free tier:</strong> 5 new images/day per IP (if rate limiting is enabled). Cache hits are unlimited.</li>
+          <li><strong>Generation control:</strong> set <code>GEN_TOKEN</code> to require <code>X-Gen-Token</code> on new generations (see <a href="#access" style={{ color: "#0070f3" }}>Access control</a>). Cache hits are always open.</li>
         </ul>
         <p
           style={{

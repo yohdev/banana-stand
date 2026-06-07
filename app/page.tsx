@@ -1,5 +1,6 @@
 import ThemeToggle from "./components/ThemeToggle";
 import DemoImage from "./components/DemoImage";
+import CopyButton from "./components/CopyButton";
 import { InstanceProvider } from "./components/InstanceProvider";
 import InstanceField from "./components/InstanceField";
 import PromptBlock from "./components/PromptBlock";
@@ -16,6 +17,11 @@ export default function Home() {
   const defaultInstance = base || PLACEHOLDER_INSTANCE;
 
   const i = (path: string) => `${base}${path}`;
+
+  const genCurl = `# New image — only works with the secret
+curl -H "X-Gen-Token: $GEN_TOKEN" \\
+  "${defaultInstance}/i/1200x600?prompt=team+in+a+bright+office"`;
+
 
   return (
     <InstanceProvider defaultInstance={defaultInstance}>
@@ -311,6 +317,48 @@ export default function Home() {
           </div>
         </section>
 
+        {/* ---------- access control ---------- */}
+        <section id="access" className="section container">
+          <span className="eyebrow">Access control</span>
+          <h2 style={{ marginBottom: 10 }}>Keep generation to yourself.</h2>
+          <p className="muted" style={{ maxWidth: "56ch", marginBottom: 32 }}>
+            Generating a new image costs a Gemini call. Set a <code>GEN_TOKEN</code>{" "}
+            on your instance and only requests carrying it can create new images —
+            while everything you&apos;ve already made keeps serving to everyone, free.
+          </p>
+
+          <div className="grid-2" style={{ marginBottom: 28 }}>
+            <div className="card feature">
+              <h3 style={{ marginBottom: 6 }}>Cache hits — open</h3>
+              <p className="muted" style={{ fontSize: "0.95rem" }}>
+                Any URL you&apos;ve already generated is served from the CDN to
+                anyone, no token needed. Embedded <code>&lt;img&gt;</code> tags
+                never break.
+              </p>
+            </div>
+            <div className="card feature">
+              <h3 style={{ marginBottom: 6 }}>New generation — gated</h3>
+              <p className="muted" style={{ fontSize: "0.95rem" }}>
+                With <code>GEN_TOKEN</code> set, a cache miss needs a matching{" "}
+                <code>X-Gen-Token</code> header — otherwise it returns{" "}
+                <code>401</code>. No token, no surprise bill.
+              </p>
+            </div>
+          </div>
+
+          <div className="codeblock">
+            <div className="copy-affordance">
+              <CopyButton text={genCurl} label="Copy" />
+            </div>
+            <pre>{genCurl}</pre>
+          </div>
+          <p className="muted" style={{ marginTop: 16, fontSize: "0.92rem" }}>
+            Set <code>GEN_TOKEN</code> in your Vercel project (Production scope) and
+            redeploy. The hosted instance at <code>bananastandai.com</code> runs with
+            it set, so only the maintainer can trigger new generations.
+          </p>
+        </section>
+
         {/* ---------- footer ---------- */}
         <footer className="footer">
           <div className="container">
@@ -334,7 +382,6 @@ export default function Home() {
               <span style={{ display: "flex", gap: 18 }}>
                 <a href={GITHUB_URL}>GitHub</a>
                 <a href="/docs">Docs</a>
-                <a href="/test">Test the MVP</a>
                 <a href="/contributors">Contributors</a>
               </span>
             </div>
