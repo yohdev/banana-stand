@@ -335,6 +335,7 @@ export default function Home() {
                 <a href={GITHUB_URL}>GitHub</a>
                 <a href="/docs">Docs</a>
                 <a href="/test">Test the MVP</a>
+                <a href="/contributors">Contributors</a>
               </span>
             </div>
           </div>

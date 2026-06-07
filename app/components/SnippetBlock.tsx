@@ -1,19 +1,18 @@
 "use client";
 
-import CopyButton from "./CopyButton";
+import EditableBlock from "./EditableBlock";
 import { useInstance } from "./InstanceProvider";
 import { buildClaudeMdSnippet } from "../instance";
 
 export default function SnippetBlock() {
   const { base } = useInstance();
-  const text = buildClaudeMdSnippet(base);
 
   return (
-    <div className="codeblock" style={{ maxWidth: 760 }}>
-      <div className="copy-affordance">
-        <CopyButton text={text} label="Copy snippet" />
-      </div>
-      <pre>{text}</pre>
-    </div>
+    <EditableBlock
+      template={buildClaudeMdSnippet(base)}
+      ariaLabel="CLAUDE.md snippet"
+      copyLabel="Copy snippet"
+      style={{ maxWidth: 760 }}
+    />
   );
 }

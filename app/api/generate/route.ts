@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { resolveRequest, lookupCache, generateAndStore, ValidationError } from "@/lib/pipeline";
-import { peekRateLimit, consumeRateLimit } from "@/lib/ratelimit";
-import { getUserId, usageHeaders } from "@/lib/usage";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
+/**
+ * Cache-miss generation is gated by GEN_TOKEN. If the env var is set, callers
+ * must send a matching `X-Gen-Token` header to generate a new image. Cache
+ * hits stay open so already-generated images keep serving to everyone.
+ */
 function checkGenToken(req: NextRequest): boolean {
   const secret = process.env.GEN_TOKEN;
   if (!secret) return true;
@@ -34,15 +37,12 @@ export async function POST(req: NextRequest) {
   const fmt = typeof b.format === "string" ? b.format : "webp";
   const quality = typeof b.quality === "number" ? b.quality : 82;
 
-  const userId = getUserId(req);
-
   try {
     const resolved = resolveRequest({ prompt, width, height, style, seed, fmt, quality });
 
-    // Cache hit — never metered.
+    // Cache hit — open to everyone, never calls Gemini.
     const cachedUrl = await lookupCache(resolved);
     if (cachedUrl) {
-      const rl = await peekRateLimit(userId);
       return NextResponse.json(
         {
           url: cachedUrl,
@@ -52,11 +52,11 @@ export async function POST(req: NextRequest) {
           model: resolved.model,
           id: resolved.hash,
         },
-        { status: 200, headers: usageHeaders(rl, "HIT") }
+        { status: 200, headers: { "X-Cache": "HIT" } }
       );
     }
 
-    // Cache miss — gate on shared secret + quota.
+    // Cache miss — a real generation. Gate on the shared secret.
     if (!checkGenToken(req)) {
       return NextResponse.json(
         { error: "X-Gen-Token header required for new image generation" },
@@ -64,16 +64,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const rl = await consumeRateLimit(userId);
-    if (!rl.allowed) {
-      return NextResponse.json(
-        { error: `Daily limit (${rl.limit}) exceeded. Resets at ${rl.resetAt}` },
-        { status: 429, headers: usageHeaders(rl, "MISS") }
-      );
-    }
-
     const result = await generateAndStore(resolved);
-    return NextResponse.json(result, { status: 200, headers: usageHeaders(rl, "MISS") });
+    return NextResponse.json(result, { status: 200, headers: { "X-Cache": "MISS" } });
   } catch (err) {
     if (err instanceof ValidationError) {
       return NextResponse.json({ error: err.message }, { status: 400 });

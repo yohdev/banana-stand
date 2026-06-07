@@ -241,6 +241,59 @@ h3 {
   right: 12px;
 }
 
+/* ---------- editable code block ---------- */
+.codeblock.editable:focus-within {
+  outline: 2px solid color-mix(in srgb, var(--accent) 65%, transparent);
+  outline-offset: 0;
+}
+.editable-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 12px 9px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+}
+.editable-hint {
+  font-size: 0.78rem;
+  color: color-mix(in srgb, var(--code-text) 60%, transparent);
+}
+.editable-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.codeblock.editable textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 16px 22px;
+  background: transparent;
+  color: var(--code-text);
+  border: 0;
+  outline: none;
+  resize: none;
+  overflow: hidden;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.reset-link {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  color: color-mix(in srgb, var(--code-text) 75%, transparent);
+  text-decoration: underline;
+  padding: 8px 6px;
+}
+.reset-link:hover {
+  color: var(--code-text);
+}
+
 /* ---------- hero ---------- */
 .hero {
   padding-block: clamp(48px, 8vw, 92px);
@@ -438,6 +491,76 @@ h3 {
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+@media (max-width: 720px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- contributors ---------- */
+.people {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+.person {
+  display: flex;
+  gap: 14px;
+  padding: 18px;
+  align-items: flex-start;
+}
+.person .avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  object-fit: cover;
+}
+.person .pname {
+  font-weight: 600;
+  line-height: 1.2;
+}
+.person .plogin {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+.person .pbio {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-top: 8px;
+}
+.person .pgh {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+.person .pgh:hover {
+  border-color: var(--accent);
+}
+.roadmap-item {
+  padding: 22px;
+}
+.roadmap-item .tag {
+  margin-bottom: 12px;
+}
+.roadmap-item h3 {
+  margin-bottom: 8px;
+}
+.roadmap-item p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
 .feature {
   padding: 24px;
 }
