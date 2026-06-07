@@ -115,7 +115,7 @@ Response:
 
 | Model | Use case |
 |---|---|
-| `gemini-2.5-flash-preview-image` | Default — fast, good quality |
+| `gemini-2.5-flash-image` | Default (Vertex AI) — fast, good quality |
 
 Set `IMAGE_MODEL` env var to override.
 

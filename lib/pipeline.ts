@@ -44,7 +44,7 @@ export class ValidationError extends Error {
   }
 }
 
-const MODEL = () => process.env.IMAGE_MODEL ?? "gemini-2.5-flash-preview-image";
+const MODEL = () => process.env.IMAGE_MODEL ?? "gemini-2.5-flash-image";
 
 /**
  * Validate + normalize inputs and compute the deterministic cache key.

@@ -1,3 +1,4 @@
+import { GoogleGenAI } from "@google/genai";
 import sharp from "sharp";
 
 const MAX_MEGAPIXELS = 4_000_000;
@@ -20,6 +21,44 @@ export function clampDimensions(w: number, h: number): { width: number; height: 
   return { width, height };
 }
 
+interface ServiceAccount {
+  project_id?: string;
+  [key: string]: unknown;
+}
+
+function getServiceAccount(): ServiceAccount {
+  const raw = process.env.GOOGLE_CLOUD_CREDENTIALS;
+  if (!raw) {
+    throw new Error("GOOGLE_CLOUD_CREDENTIALS env var is not set");
+  }
+  try {
+    return JSON.parse(raw) as ServiceAccount;
+  } catch {
+    throw new Error("GOOGLE_CLOUD_CREDENTIALS is not valid JSON");
+  }
+}
+
+/**
+ * Build a Vertex AI client via the unified Google Gen AI SDK.
+ * Auth uses the service-account JSON (Vertex does not take an API key).
+ */
+function getClient(): GoogleGenAI {
+  const credentials = getServiceAccount();
+  const project = process.env.GOOGLE_CLOUD_PROJECT ?? credentials.project_id;
+  const location = process.env.VERTEX_LOCATION ?? "europe-west4";
+
+  if (!project) {
+    throw new Error("No project id (set GOOGLE_CLOUD_PROJECT or include project_id in credentials)");
+  }
+
+  return new GoogleGenAI({
+    vertexai: true,
+    project,
+    location,
+    googleAuthOptions: { credentials },
+  });
+}
+
 export async function generateImage(
   prompt: string,
   width: number,
@@ -27,58 +66,25 @@ export async function generateImage(
   format: ImageFormat,
   quality: number
 ): Promise<Buffer> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error("GEMINI_API_KEY is not set");
+  const model = process.env.IMAGE_MODEL ?? "gemini-2.5-flash-image";
+  const client = getClient();
 
-  const model = process.env.IMAGE_MODEL ?? "gemini-2.5-flash-preview-image";
-
-  const requestBody = {
-    contents: [
-      {
-        role: "user",
-        parts: [{ text: prompt }],
-      },
-    ],
-    generationConfig: {
+  const response = await client.models.generateContent({
+    model,
+    contents: [{ role: "user", parts: [{ text: prompt }] }],
+    config: {
       responseModalities: ["IMAGE"],
     },
-  };
+  });
 
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(requestBody),
-    }
-  );
+  const parts = response.candidates?.[0]?.content?.parts ?? [];
+  const imagePart = parts.find((p) => p.inlineData?.data);
 
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`Gemini API error (${res.status}): ${errText}`);
+  if (!imagePart?.inlineData?.data) {
+    throw new Error("Vertex AI returned no image data");
   }
 
-  const data = (await res.json()) as Record<string, unknown>;
-  const candidates = data.candidates as unknown[];
-  const candidate = candidates?.[0] as Record<string, unknown>;
-  const content = candidate?.content as Record<string, unknown>;
-  const partArray = content?.parts as unknown[];
-
-  // Find the part that actually carries image bytes.
-  let inlineData: Record<string, unknown> | undefined;
-  for (const p of partArray ?? []) {
-    const candidatePart = (p as Record<string, unknown>)?.inlineData as Record<string, unknown>;
-    if (candidatePart?.data) {
-      inlineData = candidatePart;
-      break;
-    }
-  }
-
-  if (!inlineData?.data) {
-    throw new Error("Gemini returned no image data");
-  }
-
-  const rawBuffer = Buffer.from(inlineData.data as string, "base64");
+  const rawBuffer = Buffer.from(imagePart.inlineData.data, "base64");
 
   let pipeline = sharp(rawBuffer).resize(width, height, { fit: "cover", position: "centre" });
 
