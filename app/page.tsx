@@ -61,9 +61,19 @@ export default function Home() {
         </figure>
       </div>
 
-      <div style={{ background: "#e8f4ff", padding: "1rem", borderRadius: 8, marginBottom: "2rem" }}>
-        <strong>🧪 <a href="/test" style={{ color: "#0070f3", textDecoration: "none" }}>Test the MVP</a></strong> — Generate 3 images,
-        inspect API responses, verify caching and quota behavior.
+      <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginBottom: "2rem" }}>
+        <a href="/docs" style={{ flex: 1, minWidth: 220, background: "#0070f3", color: "white", padding: "1rem", borderRadius: 8, textDecoration: "none" }}>
+          <strong>📖 Read the Docs</strong>
+          <div style={{ fontSize: "0.85rem", opacity: 0.9, marginTop: 4 }}>
+            URL pattern, parameters, examples, Claude Code setup.
+          </div>
+        </a>
+        <a href="/test" style={{ flex: 1, minWidth: 220, background: "#e8f4ff", color: "#0a3", padding: "1rem", borderRadius: 8, textDecoration: "none" }}>
+          <strong style={{ color: "#0070f3" }}>🧪 Test the MVP</strong>
+          <div style={{ fontSize: "0.85rem", color: "#444", marginTop: 4 }}>
+            Generate 3 images, inspect API responses and caching.
+          </div>
+        </a>
       </div>
 
       <h2>API reference</h2>
