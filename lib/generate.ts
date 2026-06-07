@@ -45,7 +45,7 @@ function getServiceAccount(): ServiceAccount {
 function getClient(): GoogleGenAI {
   const credentials = getServiceAccount();
   const project = process.env.GOOGLE_CLOUD_PROJECT ?? credentials.project_id;
-  const location = process.env.VERTEX_LOCATION ?? "us-east4";
+  const location = process.env.VERTEX_LOCATION ?? "us-central1";
 
   if (!project) {
     throw new Error("No project id (set GOOGLE_CLOUD_PROJECT or include project_id in credentials)");
