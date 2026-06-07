@@ -2,7 +2,7 @@
 
 > "There's always money in the banana stand."
 
-An AI-powered placeholder image service. Write a URL, get an image. Generated once by Gemini, cached forever on a CDN.
+An AI-powered placeholder image service. Write a URL, get an image. Generated once by Gemini (via Vertex AI), cached forever on a CDN.
 
 ```html
 <img src="https://your-instance.vercel.app/i/1200x600?prompt=modern+fintech+dashboard+hero&style=photographic" />

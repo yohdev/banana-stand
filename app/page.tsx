@@ -39,7 +39,7 @@ layout slot. Same prompt and size always returns the same image, so reuse URLs.`
             <a className="navlink" href={GITHUB_URL}>
               GitHub
             </a>
-            <a className="navlink" href="#reference">
+            <a className="navlink" href="/docs">
               Docs
             </a>
             <a className="btn btn-accent keep" href="#deploy">
@@ -360,7 +360,7 @@ layout slot. Same prompt and size always returns the same image, so reuse URLs.`
               </span>
               <span style={{ display: "flex", gap: 18 }}>
                 <a href={GITHUB_URL}>GitHub</a>
-                <a href="#reference">Docs</a>
+                <a href="/docs">Docs</a>
                 <a href="/test">Test the MVP</a>
               </span>
             </div>
