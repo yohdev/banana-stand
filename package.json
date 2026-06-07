@@ -8,7 +8,6 @@
     "start": "next start"
   },
   "dependencies": {
-    "@google/genai": "^2.8.0",
     "@upstash/redis": "^1.38.0",
     "@vercel/blob": "^2.4.0",
     "google-auth-library": "^10.7.0",
