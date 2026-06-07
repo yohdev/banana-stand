@@ -241,6 +241,59 @@ h3 {
   right: 12px;
 }
 
+/* ---------- editable code block ---------- */
+.codeblock.editable:focus-within {
+  outline: 2px solid color-mix(in srgb, var(--accent) 65%, transparent);
+  outline-offset: 0;
+}
+.editable-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 12px 9px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+}
+.editable-hint {
+  font-size: 0.78rem;
+  color: color-mix(in srgb, var(--code-text) 60%, transparent);
+}
+.editable-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.codeblock.editable textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 16px 22px;
+  background: transparent;
+  color: var(--code-text);
+  border: 0;
+  outline: none;
+  resize: none;
+  overflow: hidden;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.reset-link {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  color: color-mix(in srgb, var(--code-text) 75%, transparent);
+  text-decoration: underline;
+  padding: 8px 6px;
+}
+.reset-link:hover {
+  color: var(--code-text);
+}
+
 /* ---------- hero ---------- */
 .hero {
   padding-block: clamp(48px, 8vw, 92px);
