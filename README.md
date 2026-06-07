@@ -49,6 +49,11 @@ cp .env.local.example .env.local
 | `IMAGE_MODEL` | No | Override the image model. Default `gemini-2.5-flash-image`. |
 | `GEN_TOKEN` | No | Shared secret that gates **new** image generation. See [Access control](#access-control). |
 | `MODERATION_PROVIDER` | No | `none` (default), `keyword`, or `openai`. See [Moderation](#moderation). |
+| `MODERATION_FAIL_CLOSED` | No | `true` to reject generation when the moderation provider errors. Default fails open. |
+| `MODERATION_DENYLIST` | No | Comma-separated terms for the `keyword` provider (overrides the built-in list). |
+| `OPENAI_API_KEY` | No | Required only when `MODERATION_PROVIDER=openai`. |
+| `NEXT_PUBLIC_BASE_URL` | No | Public base URL of your deploy. Sets Open Graph metadata and the default host shown in copy-paste snippets. |
+| `GITHUB_TOKEN` | No | Raises the GitHub API rate limit for the `/contributors` page. Unauthenticated works (60 req/hr/IP). |
 
 > Auth is **Vertex AI via a service account** — there is no `GEMINI_API_KEY`. The Google Gen AI SDK handles auth from the credentials JSON.
 
@@ -58,9 +63,13 @@ cp .env.local.example .env.local
 npm run dev
 ```
 
+> Without `GOOGLE_CLOUD_CREDENTIALS` + `BLOB_READ_WRITE_TOKEN`, the app still runs — the demo images just show their "warming up" shimmer state instead of generating. That's expected. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full dev setup.
+
 ### 4. Deploy to Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yohdev/banana-stand&env=GOOGLE_CLOUD_CREDENTIALS,BLOB_READ_WRITE_TOKEN&envDescription=Vertex%20AI%20service-account%20JSON%20and%20Vercel%20Blob%20token)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yohdev/banana-stand&env=GOOGLE_CLOUD_CREDENTIALS,BLOB_READ_WRITE_TOKEN,GEN_TOKEN&envDescription=Vertex%20AI%20service-account%20JSON%2C%20Vercel%20Blob%20token%2C%20and%20a%20GEN_TOKEN%20secret%20to%20gate%20generation&envLink=https://github.com/yohdev/banana-stand#access-control)
+
+> **Set `GEN_TOKEN` to a strong secret for any public deploy.** Without it, anyone can run up generation cost against your instance — see [Access control](#access-control). The deploy prompt includes it; you can leave it blank for a private/self-host instance.
 
 The deploy flow prompts for `GOOGLE_CLOUD_CREDENTIALS` and `BLOB_READ_WRITE_TOKEN` — Vercel stores them server-side and never echoes the values back. Add a Vercel Blob store to provision `BLOB_READ_WRITE_TOKEN`.
 
