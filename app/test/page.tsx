@@ -24,13 +24,17 @@ const TEST_PROMPTS = [
 export default function TestPage() {
   const [images, setImages] = useState<GeneratedImage[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingStatus, setLoadingStatus] = useState("");
   const [genToken, setGenToken] = useState("");
 
   async function generateImages() {
     setLoading(true);
     setImages([]);
 
-    for (const { prompt, width, height, style } of TEST_PROMPTS) {
+    for (let i = 0; i < TEST_PROMPTS.length; i++) {
+      const { prompt, width, height, style } = TEST_PROMPTS[i];
+      setLoadingStatus(`Generating image ${i + 1} of ${TEST_PROMPTS.length}...`);
+
       try {
         const headers: Record<string, string> = {
           "Content-Type": "application/json",
@@ -59,6 +63,11 @@ export default function TestPage() {
         };
 
         setImages((prev) => [...prev, img]);
+
+        // Wait 2 seconds between requests to avoid rate limits
+        if (i < TEST_PROMPTS.length - 1) {
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+        }
       } catch (err) {
         const img: GeneratedImage = {
           prompt,
@@ -77,6 +86,7 @@ export default function TestPage() {
     }
 
     setLoading(false);
+    setLoadingStatus("");
   }
 
   return (
@@ -100,22 +110,50 @@ export default function TestPage() {
           />
         </label>
 
-        <button
-          onClick={generateImages}
-          disabled={loading}
-          style={{
-            marginTop: 12,
-            padding: "10px 20px",
-            fontSize: 16,
-            background: loading ? "#ccc" : "#0070f3",
-            color: "white",
-            border: "none",
-            borderRadius: 4,
-            cursor: loading ? "not-allowed" : "pointer",
-          }}
-        >
-          {loading ? "Generating..." : "Generate 3 Test Images"}
-        </button>
+        <div style={{ marginTop: 12 }}>
+          <button
+            onClick={generateImages}
+            disabled={loading}
+            style={{
+              padding: "10px 20px",
+              fontSize: 16,
+              background: loading ? "#ccc" : "#0070f3",
+              color: "white",
+              border: "none",
+              borderRadius: 4,
+              cursor: loading ? "not-allowed" : "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            {loading && (
+              <span
+                style={{
+                  display: "inline-block",
+                  width: 16,
+                  height: 16,
+                  border: "3px solid rgba(255,255,255,0.3)",
+                  borderTop: "3px solid white",
+                  borderRadius: "50%",
+                  animation: "spin 1s linear infinite",
+                }}
+              />
+            )}
+            {loading ? loadingStatus : "Generate 3 Test Images"}
+          </button>
+          {loading && (
+            <p style={{ marginTop: 8, fontSize: "0.9rem", color: "#666" }}>
+              Requests are spaced out to avoid rate limits. Please wait...
+            </p>
+          )}
+          <style>{`
+            @keyframes spin {
+              from { transform: rotate(0deg); }
+              to { transform: rotate(360deg); }
+            }
+          `}</style>
+        </div>
       </section>
 
       {images.length > 0 && (
