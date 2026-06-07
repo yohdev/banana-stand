@@ -61,6 +61,11 @@ export default function Home() {
         </figure>
       </div>
 
+      <div style={{ background: "#e8f4ff", padding: "1rem", borderRadius: 8, marginBottom: "2rem" }}>
+        <strong>🧪 <a href="/test" style={{ color: "#0070f3", textDecoration: "none" }}>Test the MVP</a></strong> — Generate 3 images,
+        inspect API responses, verify caching and quota behavior.
+      </div>
+
       <h2>API reference</h2>
       <ul>
         <li>
