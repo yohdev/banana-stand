@@ -1,66 +1,85 @@
-import Image from "next/image";
-import styles from "./page.module.css";
-
 export default function Home() {
+  const base = process.env.NEXT_PUBLIC_BASE_URL ?? "";
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <main style={{ fontFamily: "system-ui, sans-serif", maxWidth: 900, margin: "0 auto", padding: "2rem" }}>
+      <h1>🍌 Banana Stand</h1>
+      <p>
+        AI placeholder image API. Drop a URL into an <code>&lt;img src&gt;</code> and get a
+        contextually appropriate, web-ready image — generated once, cached forever.
+      </p>
+
+      <h2>Usage</h2>
+      <pre style={{ background: "#f4f4f4", padding: "1rem", borderRadius: 6, overflowX: "auto" }}>
+        {`<img src="${base}/i/1200x600?prompt=modern+fintech+dashboard+hero&style=photographic" />`}
+      </pre>
+
+      <h2>Demo images</h2>
+      <p>Generated on first request, served from CDN cache thereafter.</p>
+
+      <div style={{ display: "grid", gap: "1.5rem" }}>
+        <figure style={{ margin: 0 }}>
+          <figcaption style={{ marginBottom: 4 }}>
+            <strong>1200×600 — fintech hero (photographic)</strong>
+          </figcaption>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`${base}/i/1200x600?prompt=modern+fintech+dashboard+hero&style=photographic`}
+            alt="fintech hero placeholder"
+            width={1200}
+            height={600}
+            style={{ width: "100%", height: "auto", borderRadius: 8 }}
+          />
+        </figure>
+
+        <figure style={{ margin: 0 }}>
+          <figcaption style={{ marginBottom: 4 }}>
+            <strong>800×800 — team collaboration (web)</strong>
+          </figcaption>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`${base}/i/800x800?prompt=team+collaborating+in+bright+modern+office`}
+            alt="team collaboration placeholder"
+            width={800}
+            height={800}
+            style={{ width: "100%", maxWidth: 400, height: "auto", borderRadius: 8 }}
+          />
+        </figure>
+
+        <figure style={{ margin: 0 }}>
+          <figcaption style={{ marginBottom: 4 }}>
+            <strong>1600×900 — abstract tech background</strong>
+          </figcaption>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`${base}/i/1600x900?prompt=abstract+gradient+tech+background&style=abstract`}
+            alt="abstract background placeholder"
+            width={1600}
+            height={900}
+            style={{ width: "100%", height: "auto", borderRadius: 8 }}
+          />
+        </figure>
+      </div>
+
+      <h2>API reference</h2>
+      <ul>
+        <li>
+          <code>GET /i/&#123;width&#125;x&#123;height&#125;?prompt=...&amp;style=...&amp;fmt=...&amp;q=...&amp;seed=...</code>
+          — returns 302 to cached image
+        </li>
+        <li>
+          <code>POST /api/generate</code> — JSON body, returns{" "}
+          <code>{"{ url, cached, width, height, model, id }"}</code>
+        </li>
+        <li>
+          <code>GET /api/health</code> — liveness + active model
+        </li>
+      </ul>
+
+      <p style={{ marginTop: "2rem", fontSize: "0.85rem", color: "#666" }}>
+        ⚠️ Images are AI-generated and carry an invisible SynthID watermark. Do not present them as
+        authentic photography.
+      </p>
+    </main>
   );
 }
