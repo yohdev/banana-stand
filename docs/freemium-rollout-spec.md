@@ -228,6 +228,7 @@ Because tier resolution is one stubbed function, going from free-only to paid ti
 - [x] Add `lib/ratelimit.ts`. *(split into `peekRateLimit` / `consumeRateLimit`)*
 - [x] Wire `getUserId` + cache-hit-free / miss-metered logic into `/i` and `/api/generate`.
 - [x] Add usage response headers.
+- [x] Wire a real moderation provider (`lib/moderation.ts` — pluggable: none/keyword/openai).
 - [ ] Deploy public free instance (5/day) at a controlled domain.
 - [ ] Publish ToS: AI-generated, no authentic-photo representation, fair-use limits.
 - [ ] (Deferred) Auth → Stripe → implement `getTier()`.

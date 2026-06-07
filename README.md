@@ -156,7 +156,11 @@ Tier resolution lives in one stubbed function (`getTier` in `lib/ratelimit.ts`).
 ## Guardrails
 
 - `GEN_TOKEN` — if set, `X-Gen-Token: <secret>` header required for new generations. Cache hits remain open so existing `<img>` tags keep working.
-- Moderation hook at `lib/moderation.ts` — stub for MVP, wire a real provider as a fast-follow.
+- Moderation hook at `lib/moderation.ts` — pluggable via `MODERATION_PROVIDER`:
+  - `none` (default) — approves everything; fine for trusted self-host.
+  - `keyword` — zero-dependency denylist, customize with `MODERATION_DENYLIST`.
+  - `openai` — OpenAI Moderation API (free), set `OPENAI_API_KEY`.
+  - Providers fail **open** by default; set `MODERATION_FAIL_CLOSED=true` to reject on outage. Recommended: `openai` for any public instance.
 - Stampede note: two simultaneous cache misses for the same key may both generate. Idempotent by design. Redis lock is a fast-follow.
 
 ---
