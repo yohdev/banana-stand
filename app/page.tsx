@@ -1,100 +1,372 @@
+import CopyButton from "./components/CopyButton";
+import ThemeToggle from "./components/ThemeToggle";
+import DemoImage from "./components/DemoImage";
+
+const GITHUB_URL = "https://github.com/yohdev/banana-stand";
+
 export default function Home() {
+  // Relative paths load demo images from this same instance.
   const base = process.env.NEXT_PUBLIC_BASE_URL ?? "";
+  // Copy/paste artifacts want an absolute URL; fall back to the placeholder host.
+  const promptBase = base || "https://your-instance.vercel.app";
+
+  const i = (path: string) => `${base}${path}`;
+
+  const claudePrompt = `Build a simple, modern landing page for a small coffee-roastery startup.
+
+For every image, use the Banana Stand API as a plain <img> tag:
+${promptBase}/i/{width}x{height}?prompt={url-encoded+description}&style=photographic
+
+Use exactly three images — a wide hero, a product close-up, and a team photo.
+Keep it to one HTML file. No gray placeholder boxes.`;
+
+  const claudeMdSnippet = `For placeholder images on this site, use the Banana Stand API. Write image URLs as
+${promptBase}/i/{width}x{height}?prompt={url-encoded+description}&style=photographic
+directly in <img src> or CSS background-image. Choose dimensions that match the
+layout slot. Same prompt and size always returns the same image, so reuse URLs.`;
+
+  const exampleUrl = `${promptBase}/i/1600x900?prompt=team+collaborating+in+a+bright+modern+office&style=photographic`;
 
   return (
-    <main style={{ fontFamily: "system-ui, sans-serif", maxWidth: 900, margin: "0 auto", padding: "2rem" }}>
-      <h1>🍌 Banana Stand</h1>
-      <p>
-        AI placeholder image API. Drop a URL into an <code>&lt;img src&gt;</code> and get a
-        contextually appropriate, web-ready image — generated once, cached forever.
-      </p>
+    <>
+      {/* ---------- nav ---------- */}
+      <header className="nav">
+        <div className="container nav-inner">
+          <a href="#top" className="brand">
+            <span aria-hidden="true">🍌</span> Banana Stand
+          </a>
+          <nav className="nav-links">
+            <a className="navlink" href={GITHUB_URL}>
+              GitHub
+            </a>
+            <a className="navlink" href="/docs">
+              Docs
+            </a>
+            <a className="btn btn-accent keep" href="#deploy">
+              Deploy
+            </a>
+            <ThemeToggle />
+          </nav>
+        </div>
+      </header>
 
-      <h2>Usage</h2>
-      <pre style={{ background: "#f4f4f4", padding: "1rem", borderRadius: 6, overflowX: "auto" }}>
-        {`<img src="${base}/i/1200x600?prompt=modern+fintech+dashboard+hero&style=photographic" />`}
-      </pre>
+      <main id="top">
+        {/* ---------- hero ---------- */}
+        <section className="container hero">
+          <div className="hero-grid">
+            <div>
+              <span className="pill">⌘ Built for Claude Code</span>
+              <h1 className="display">Stop shipping gray boxes.</h1>
+              <p className="lede">
+                Real-looking placeholder images from a single URL. Generated once
+                by Gemini, cached forever, served from the edge. No SDK, no keys
+                in your page.
+              </p>
 
-      <h2>Demo images</h2>
-      <p>Generated on first request, served from CDN cache thereafter.</p>
+              <div className="codeblock" style={{ marginTop: 28 }}>
+                <div className="copy-affordance">
+                  <CopyButton text={claudePrompt} label="Copy prompt" />
+                </div>
+                <pre>{claudePrompt}</pre>
+              </div>
 
-      <div style={{ display: "grid", gap: "1.5rem" }}>
-        <figure style={{ margin: 0 }}>
-          <figcaption style={{ marginBottom: 4 }}>
-            <strong>1200×600 — fintech hero (photographic)</strong>
-          </figcaption>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={`${base}/i/1200x600?prompt=modern+fintech+dashboard+hero&style=photographic`}
-            alt="fintech hero placeholder"
-            width={1200}
-            height={600}
-            style={{ width: "100%", height: "auto", borderRadius: 8 }}
-          />
-        </figure>
+              <div className="steps">
+                <span className="step">
+                  <span className="num">1</span> Copy the prompt
+                </span>
+                <span className="step">
+                  <span className="num">2</span> Paste into Claude Code
+                </span>
+                <span className="step">
+                  <span className="num">3</span> Get a real page, images and all
+                </span>
+              </div>
+            </div>
 
-        <figure style={{ margin: 0 }}>
-          <figcaption style={{ marginBottom: 4 }}>
-            <strong>800×800 — team collaboration (web)</strong>
-          </figcaption>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={`${base}/i/800x800?prompt=team+collaborating+in+bright+modern+office`}
-            alt="team collaboration placeholder"
-            width={800}
-            height={800}
-            style={{ width: "100%", maxWidth: 400, height: "auto", borderRadius: 8 }}
-          />
-        </figure>
-
-        <figure style={{ margin: 0 }}>
-          <figcaption style={{ marginBottom: 4 }}>
-            <strong>1600×900 — abstract tech background</strong>
-          </figcaption>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={`${base}/i/1600x900?prompt=abstract+gradient+tech+background&style=abstract`}
-            alt="abstract background placeholder"
-            width={1600}
-            height={900}
-            style={{ width: "100%", height: "auto", borderRadius: 8 }}
-          />
-        </figure>
-      </div>
-
-      <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginBottom: "2rem" }}>
-        <a href="/docs" style={{ flex: 1, minWidth: 220, background: "#0070f3", color: "white", padding: "1rem", borderRadius: 8, textDecoration: "none" }}>
-          <strong>📖 Read the Docs</strong>
-          <div style={{ fontSize: "0.85rem", opacity: 0.9, marginTop: 4 }}>
-            URL pattern, parameters, examples, Claude Code setup.
+            <div>
+              <DemoImage
+                src={i(
+                  "/i/1100x900?prompt=sunlit+modern+coffee+roastery+interior+warm+tones&style=photographic"
+                )}
+                alt="Generated example: a sunlit modern coffee roastery interior"
+                width={1100}
+                height={900}
+              />
+              <p className="shot-cap">
+                This image is real output —{" "}
+                <code>prompt=sunlit modern coffee roastery interior</code>
+              </p>
+            </div>
           </div>
-        </a>
-        <a href="/test" style={{ flex: 1, minWidth: 220, background: "#e8f4ff", color: "#0a3", padding: "1rem", borderRadius: 8, textDecoration: "none" }}>
-          <strong style={{ color: "#0070f3" }}>🧪 Test the MVP</strong>
-          <div style={{ fontSize: "0.85rem", color: "#444", marginTop: 4 }}>
-            Generate 3 images, inspect API responses and caching.
+        </section>
+
+        {/* ---------- proof: see what it builds ---------- */}
+        <section className="section" style={{ background: "var(--surface-2)" }}>
+          <div className="container">
+            <span className="eyebrow">See what it builds</span>
+            <h2 style={{ marginBottom: 10 }}>Paste that prompt → get this page.</h2>
+            <p className="muted" style={{ maxWidth: "52ch", marginBottom: 32 }}>
+              Every image below is generated by the Banana Stand API from the
+              prompt baked into its URL. No stock photos, no licensing, no gray
+              rectangles.
+            </p>
+
+            <div className="browser">
+              <div className="browser-bar">
+                <span className="dot" />
+                <span className="dot" />
+                <span className="dot" />
+                <span className="browser-url mono">localhost:3000 — Roast &amp; Co.</span>
+              </div>
+              <div className="mock">
+                <div className="span2">
+                  <DemoImage
+                    src={i(
+                      "/i/1200x520?prompt=artisan+coffee+roastery+hero+warm+morning+light+bags+of+beans&style=photographic"
+                    )}
+                    alt="Generated hero: artisan coffee roastery"
+                    width={1200}
+                    height={520}
+                    rounded={false}
+                  />
+                </div>
+                <DemoImage
+                  src={i(
+                    "/i/600x600?prompt=close+up+of+freshly+roasted+coffee+beans+pouring&style=photographic"
+                  )}
+                  alt="Generated product shot: roasted coffee beans"
+                  width={600}
+                  height={600}
+                  rounded={false}
+                />
+                <DemoImage
+                  src={i(
+                    "/i/600x600?prompt=friendly+small+coffee+roastery+team+in+aprons+bright+space&style=photographic"
+                  )}
+                  alt="Generated team photo: coffee roastery team"
+                  width={600}
+                  height={600}
+                  rounded={false}
+                />
+              </div>
+            </div>
           </div>
-        </a>
-      </div>
+        </section>
 
-      <h2>API reference</h2>
-      <ul>
-        <li>
-          <code>GET /i/&#123;width&#125;x&#123;height&#125;?prompt=...&amp;style=...&amp;fmt=...&amp;q=...&amp;seed=...</code>
-          — returns 302 to cached image
-        </li>
-        <li>
-          <code>POST /api/generate</code> — JSON body, returns{" "}
-          <code>{"{ url, cached, width, height, model, id }"}</code>
-        </li>
-        <li>
-          <code>GET /api/health</code> — liveness + active model
-        </li>
-      </ul>
+        {/* ---------- how it works ---------- */}
+        <section className="section container">
+          <span className="eyebrow">How it works</span>
+          <h2 style={{ marginBottom: 32 }}>One URL. Generated once. Cached forever.</h2>
+          <div className="grid-3">
+            <div className="card feature">
+              <div className="k">1</div>
+              <h3>Write a URL</h3>
+              <p>
+                Put the size and a plain-language prompt right in the path. Drop
+                it into an <code>&lt;img&gt;</code> tag or a CSS background.
+              </p>
+            </div>
+            <div className="card feature">
+              <div className="k">2</div>
+              <h3>Generated on first hit</h3>
+              <p>
+                A server-side prompt layer turns terse prompts into clean web
+                imagery, sized to exactly what you asked for.
+              </p>
+            </div>
+            <div className="card feature">
+              <div className="k">3</div>
+              <h3>Cached &amp; served fast</h3>
+              <p>
+                Identical URLs always return the same image from the CDN — stable
+                across reloads and deploys, near-zero cost after the first.
+              </p>
+            </div>
+          </div>
+        </section>
 
-      <p style={{ marginTop: "2rem", fontSize: "0.85rem", color: "#666" }}>
-        ⚠️ Images are AI-generated and carry an invisible SynthID watermark. Do not present them as
-        authentic photography.
-      </p>
-    </main>
+        {/* ---------- make it permanent ---------- */}
+        <section className="section" style={{ background: "var(--surface-2)" }}>
+          <div className="container">
+            <span className="eyebrow">Make it permanent</span>
+            <h2 style={{ marginBottom: 10 }}>Teach Claude Code once.</h2>
+            <p className="muted" style={{ maxWidth: "54ch", marginBottom: 24 }}>
+              Drop this into your project&apos;s <code>CLAUDE.md</code> and Claude
+              uses Banana Stand automatically whenever it adds images — no
+              reminding, no copy-paste per page.
+            </p>
+            <div className="codeblock" style={{ maxWidth: 760 }}>
+              <div className="copy-affordance">
+                <CopyButton text={claudeMdSnippet} label="Copy snippet" />
+              </div>
+              <pre>{claudeMdSnippet}</pre>
+            </div>
+          </div>
+        </section>
+
+        {/* ---------- url reference ---------- */}
+        <section id="reference" className="section container">
+          <span className="eyebrow">URL pattern</span>
+          <h2 style={{ marginBottom: 24 }}>The anatomy of a Banana Stand URL.</h2>
+
+          <div className="codeblock" style={{ marginBottom: 28 }}>
+            <div className="copy-affordance">
+              <CopyButton text={exampleUrl} label="Copy" />
+            </div>
+            <pre>{`${promptBase}/i/{width}x{height}
+   ?prompt=team+collaborating+in+a+bright+modern+office
+   &style=photographic   # web (default) | photographic
+   &seed=2               # change for a different image, same prompt
+   &fmt=webp&q=82        # webp | jpeg | png`}</pre>
+          </div>
+
+          <div className="card" style={{ overflow: "hidden", marginBottom: 32 }}>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Param</th>
+                  <th>Default</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>prompt</code></td>
+                  <td><span className="tag">required</span></td>
+                  <td>URL-encoded image description.</td>
+                </tr>
+                <tr>
+                  <td><code>style</code></td>
+                  <td><code>web</code></td>
+                  <td><code>web</code> (neutral, clean) or <code>photographic</code> (realistic).</td>
+                </tr>
+                <tr>
+                  <td><code>seed</code></td>
+                  <td>derived</td>
+                  <td>Any integer — change it for a different take on the same prompt.</td>
+                </tr>
+                <tr>
+                  <td><code>fmt</code></td>
+                  <td><code>webp</code></td>
+                  <td><code>webp</code>, <code>jpeg</code>, or <code>png</code>.</td>
+                </tr>
+                <tr>
+                  <td><code>q</code></td>
+                  <td><code>82</code></td>
+                  <td>Output quality 1–100 (ignored for png).</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div className="grid-3">
+            <div>
+              <DemoImage
+                src={i("/i/600x400?prompt=abstract+blue+gradient+tech+background&style=web")}
+                alt="Generated: abstract blue gradient, web style"
+                width={600}
+                height={400}
+              />
+              <p className="shot-cap"><code>style=web</code></p>
+            </div>
+            <div>
+              <DemoImage
+                src={i("/i/600x400?prompt=barista+pulling+espresso+shot+close+up&style=photographic")}
+                alt="Generated: barista pulling espresso, photographic style"
+                width={600}
+                height={400}
+              />
+              <p className="shot-cap"><code>style=photographic</code></p>
+            </div>
+            <div className="card feature" style={{ display: "grid", alignContent: "center" }}>
+              <h3 style={{ marginBottom: 6 }}>Exact sizes</h3>
+              <p className="muted" style={{ fontSize: "0.92rem" }}>
+                Ask for <code>1200x600</code>, get exactly <code>1200×600</code>.
+                Each side clamps to 64–2048.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ---------- deploy ---------- */}
+        <section id="deploy" className="section" style={{ background: "var(--surface-2)" }}>
+          <div className="container">
+            <span className="eyebrow">Self-host</span>
+            <h2 style={{ marginBottom: 10 }}>Deploy your own in one click.</h2>
+            <p className="muted" style={{ maxWidth: "52ch", marginBottom: 24 }}>
+              Bring your own Google Cloud credentials and Vercel Blob token. You
+              run the instance, you control the cost.
+            </p>
+
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 28 }}>
+              <a
+                href={`https://vercel.com/new/clone?repository-url=${encodeURIComponent(GITHUB_URL)}`}
+                aria-label="Deploy Banana Stand to Vercel"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="https://vercel.com/button" alt="Deploy with Vercel" height={44} />
+              </a>
+              <a className="btn btn-ghost" href={GITHUB_URL}>
+                View source on GitHub
+              </a>
+            </div>
+
+            <div className="card" style={{ overflow: "hidden", maxWidth: 760 }}>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Env var</th>
+                    <th>What it&apos;s for</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>GOOGLE_CLOUD_CREDENTIALS</code></td>
+                    <td>Service-account JSON for Vertex AI (image generation).</td>
+                  </tr>
+                  <tr>
+                    <td><code>IMAGE_MODEL</code></td>
+                    <td>Which Gemini image model to call.</td>
+                  </tr>
+                  <tr>
+                    <td><code>BLOB_READ_WRITE_TOKEN</code></td>
+                    <td>Vercel Blob token for storing &amp; serving cached images.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        {/* ---------- footer ---------- */}
+        <footer className="footer">
+          <div className="container">
+            <div className="disclosure">
+              ⚠️ Images are AI-generated and carry an invisible SynthID watermark.
+              They&apos;re great placeholders — don&apos;t present them as authentic
+              photography.
+            </div>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 16,
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <span>
+                <span aria-hidden="true">🍌</span> Banana Stand — MIT licensed
+              </span>
+              <span style={{ display: "flex", gap: 18 }}>
+                <a href={GITHUB_URL}>GitHub</a>
+                <a href="/docs">Docs</a>
+                <a href="/test">Test the MVP</a>
+              </span>
+            </div>
+          </div>
+        </footer>
+      </main>
+    </>
   );
 }
