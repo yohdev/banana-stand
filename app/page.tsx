@@ -1,34 +1,24 @@
-import CopyButton from "./components/CopyButton";
 import ThemeToggle from "./components/ThemeToggle";
 import DemoImage from "./components/DemoImage";
+import { InstanceProvider } from "./components/InstanceProvider";
+import InstanceField from "./components/InstanceField";
+import PromptBlock from "./components/PromptBlock";
+import SnippetBlock from "./components/SnippetBlock";
+import UrlExampleBlock from "./components/UrlExampleBlock";
+import { PLACEHOLDER_INSTANCE } from "./instance";
 
 const GITHUB_URL = "https://github.com/yohdev/banana-stand";
 
 export default function Home() {
   // Relative paths load demo images from this same instance.
   const base = process.env.NEXT_PUBLIC_BASE_URL ?? "";
-  // Copy/paste artifacts want an absolute URL; fall back to the placeholder host.
-  const promptBase = base || "https://your-instance.vercel.app";
+  // Default for copy/paste snippets: this deploy's URL, or the placeholder host.
+  const defaultInstance = base || PLACEHOLDER_INSTANCE;
 
   const i = (path: string) => `${base}${path}`;
 
-  const claudePrompt = `Build a simple, modern landing page for a small coffee-roastery startup.
-
-For every image, use the Banana Stand API as a plain <img> tag:
-${promptBase}/i/{width}x{height}?prompt={url-encoded+description}&style=photographic
-
-Use exactly three images — a wide hero, a product close-up, and a team photo.
-Keep it to one HTML file. No gray placeholder boxes.`;
-
-  const claudeMdSnippet = `For placeholder images on this site, use the Banana Stand API. Write image URLs as
-${promptBase}/i/{width}x{height}?prompt={url-encoded+description}&style=photographic
-directly in <img src> or CSS background-image. Choose dimensions that match the
-layout slot. Same prompt and size always returns the same image, so reuse URLs.`;
-
-  const exampleUrl = `${promptBase}/i/1600x900?prompt=team+collaborating+in+a+bright+modern+office&style=photographic`;
-
   return (
-    <>
+    <InstanceProvider defaultInstance={defaultInstance}>
       {/* ---------- nav ---------- */}
       <header className="nav">
         <div className="container nav-inner">
@@ -63,12 +53,9 @@ layout slot. Same prompt and size always returns the same image, so reuse URLs.`
                 in your page.
               </p>
 
-              <div className="codeblock" style={{ marginTop: 28 }}>
-                <div className="copy-affordance">
-                  <CopyButton text={claudePrompt} label="Copy prompt" />
-                </div>
-                <pre>{claudePrompt}</pre>
-              </div>
+              <InstanceField />
+
+              <PromptBlock />
 
               <div className="steps">
                 <span className="step">
@@ -195,12 +182,7 @@ layout slot. Same prompt and size always returns the same image, so reuse URLs.`
               uses Banana Stand automatically whenever it adds images — no
               reminding, no copy-paste per page.
             </p>
-            <div className="codeblock" style={{ maxWidth: 760 }}>
-              <div className="copy-affordance">
-                <CopyButton text={claudeMdSnippet} label="Copy snippet" />
-              </div>
-              <pre>{claudeMdSnippet}</pre>
-            </div>
+            <SnippetBlock />
           </div>
         </section>
 
@@ -209,16 +191,7 @@ layout slot. Same prompt and size always returns the same image, so reuse URLs.`
           <span className="eyebrow">URL pattern</span>
           <h2 style={{ marginBottom: 24 }}>The anatomy of a Banana Stand URL.</h2>
 
-          <div className="codeblock" style={{ marginBottom: 28 }}>
-            <div className="copy-affordance">
-              <CopyButton text={exampleUrl} label="Copy" />
-            </div>
-            <pre>{`${promptBase}/i/{width}x{height}
-   ?prompt=team+collaborating+in+a+bright+modern+office
-   &style=photographic   # web (default) | photographic
-   &seed=2               # change for a different image, same prompt
-   &fmt=webp&q=82        # webp | jpeg | png`}</pre>
-          </div>
+          <UrlExampleBlock />
 
           <div className="card" style={{ overflow: "hidden", marginBottom: 32 }}>
             <table className="table">
@@ -367,6 +340,6 @@ layout slot. Same prompt and size always returns the same image, so reuse URLs.`
           </div>
         </footer>
       </main>
-    </>
+    </InstanceProvider>
   );
 }
