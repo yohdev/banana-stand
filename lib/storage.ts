@@ -1,7 +1,5 @@
 import { head, put } from "@vercel/blob";
 
-const CACHE_CONTROL = "public, max-age=31536000, immutable";
-
 export async function checkBlob(pathname: string): Promise<string | null> {
   try {
     const blob = await head(pathname);
@@ -22,7 +20,6 @@ export async function storeBlob(
     cacheControlMaxAge: 31536000,
     contentType,
   });
-  void CACHE_CONTROL;
   return blob.url;
 }
 
