@@ -7,10 +7,13 @@ const STORAGE_KEY = "bananastand-theme";
 export default function ThemeToggle() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
 
-  // Sync from whatever the no-flash bootstrap already put on <html>.
+  // Sync from whatever the no-flash bootstrap already put on <html>. This DOM
+  // value is client-only (unknown at SSR), so reading it after mount and
+  // setting state is the correct pattern.
   useEffect(() => {
     const current =
       (document.documentElement.getAttribute("data-theme") as "light" | "dark") || "light";
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTheme(current);
   }, []);
 

@@ -25,7 +25,9 @@ export default function EditableBlock({
   const ref = useRef<HTMLTextAreaElement>(null);
 
   // Follow the template (e.g. on instance-URL change) until the user takes over.
+  // Intentional controlled-sync from props; the effect is the right place.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!edited) setValue(template);
   }, [template, edited]);
 
