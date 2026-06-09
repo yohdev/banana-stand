@@ -16,6 +16,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run typecheck
+      - run: npm run test
       - run: npm run build
         env:
           # Build must succeed without real credentials; routes read env at request time.
