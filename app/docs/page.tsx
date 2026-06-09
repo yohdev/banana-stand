@@ -109,13 +109,16 @@ export default function DocsPage() {
         <main className="docs-content">
           <div className="docs-hero">
             <span className="eyebrow">Documentation</span>
-            <h1 className="display" style={{ fontSize: "clamp(2rem, 4vw, 2.8rem)", marginBottom: 12 }}>
+            <h1
+              className="display"
+              style={{ fontSize: "clamp(2rem, 4vw, 2.8rem)", marginBottom: 12 }}
+            >
               API reference
             </h1>
             <p className="lede" style={{ maxWidth: "60ch" }}>
-              AI placeholder images from a URL. Drop a link into an{" "}
-              <code>&lt;img&gt;</code> tag and get a contextually appropriate,
-              web-ready image — generated once, cached forever on a CDN.
+              AI placeholder images from a URL. Drop a link into an <code>&lt;img&gt;</code> tag and
+              get a contextually appropriate, web-ready image — generated once, cached forever on a
+              CDN.
             </p>
             <div className="callout" style={{ marginTop: 20 }}>
               <span aria-hidden="true">🔗</span>
@@ -142,10 +145,12 @@ export default function DocsPage() {
             <Code>{`${base}/i/{width}x{height}?prompt={description}&style={style}`}</Code>
             <ul>
               <li>
-                <code>{"{width}x{height}"}</code> — exact pixel dimensions, e.g. <code>1200x600</code>
+                <code>{"{width}x{height}"}</code> — exact pixel dimensions, e.g.{" "}
+                <code>1200x600</code>
               </li>
               <li>
-                <code>prompt</code> — what the image should show (URL-encode spaces as <code>+</code>)
+                <code>prompt</code> — what the image should show (URL-encode spaces as{" "}
+                <code>+</code>)
               </li>
               <li>
                 <code>style</code> — optional visual preset (see below)
@@ -169,9 +174,13 @@ export default function DocsPage() {
                 <tbody>
                   {PARAMS.map(([p, r, d, n]) => (
                     <tr key={p}>
-                      <td><code>{p}</code></td>
+                      <td>
+                        <code>{p}</code>
+                      </td>
                       <td>{r === "yes" ? <span className="tag">required</span> : "no"}</td>
-                      <td><code>{d}</code></td>
+                      <td>
+                        <code>{d}</code>
+                      </td>
                       <td>{n}</td>
                     </tr>
                   ))}
@@ -201,7 +210,9 @@ export default function DocsPage() {
                 <tbody>
                   {STYLES.map(([s, d]) => (
                     <tr key={s}>
-                      <td><code>{s}</code></td>
+                      <td>
+                        <code>{s}</code>
+                      </td>
                       <td>{d}</td>
                     </tr>
                   ))}
@@ -317,8 +328,8 @@ curl -H "X-Gen-Token: YOUR_SECRET" \\
             <h2>Caching &amp; limits</h2>
             <ul>
               <li>
-                <strong>Deterministic:</strong> same params → same image, forever. Pages stay
-                stable across reloads and deploys.
+                <strong>Deterministic:</strong> same params → same image, forever. Pages stay stable
+                across reloads and deploys.
               </li>
               <li>
                 <strong>Cache hits</strong> are instant CDN redirects (~150ms) and don&apos;t call
@@ -337,8 +348,8 @@ curl -H "X-Gen-Token: YOUR_SECRET" \\
               </li>
             </ul>
             <div className="disclosure" style={{ marginTop: 16 }}>
-              ⚠️ Images are AI-generated and carry an invisible SynthID watermark. Don&apos;t present
-              them as authentic photography.
+              ⚠️ Images are AI-generated and carry an invisible SynthID watermark. Don&apos;t
+              present them as authentic photography.
             </div>
           </section>
 

@@ -36,12 +36,7 @@ export default function CopyButton({
   }
 
   return (
-    <button
-      type="button"
-      onClick={copy}
-      className={className}
-      aria-live="polite"
-    >
+    <button type="button" onClick={copy} className={className} aria-live="polite">
       {copied ? "Copied ✓" : label}
     </button>
   );

@@ -67,7 +67,9 @@ async function openaiCheck(prompt: string): Promise<ModerationResult> {
       return { blocked: failClosed(), reason: failClosed() ? "moderation unavailable" : undefined };
     }
 
-    const data = (await res.json()) as { results?: Array<{ flagged?: boolean; categories?: Record<string, boolean> }> };
+    const data = (await res.json()) as {
+      results?: Array<{ flagged?: boolean; categories?: Record<string, boolean> }>;
+    };
     const result = data.results?.[0];
     if (result?.flagged) {
       const cats = result.categories
