@@ -211,7 +211,10 @@ export default function TestPage() {
         {/* Info */}
         <div className="card feature" style={{ marginTop: 40, maxWidth: 680 }}>
           <h3 style={{ marginBottom: 10 }}>How it behaves</h3>
-          <ul className="muted" style={{ paddingLeft: "1.1rem", lineHeight: 1.8, fontSize: "0.95rem" }}>
+          <ul
+            className="muted"
+            style={{ paddingLeft: "1.1rem", lineHeight: 1.8, fontSize: "0.95rem" }}
+          >
             <li>
               <strong style={{ color: "var(--text)" }}>Cache hits</strong> are instant and free —
               generate the same prompt twice to see <code>X-Cache: HIT</code>.

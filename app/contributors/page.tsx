@@ -45,9 +45,12 @@ const ENSURE_INCLUDED = ["furiouzzwill"];
 // Contributors pinned to the end of the list, regardless of commit count.
 const PIN_LAST = ["claude"];
 
-async function fetchProfile(
-  login: string
-): Promise<{ name: string | null; bio: string | null; avatar_url: string; html_url: string } | null> {
+async function fetchProfile(login: string): Promise<{
+  name: string | null;
+  bio: string | null;
+  avatar_url: string;
+  html_url: string;
+} | null> {
   try {
     const res = await fetch(`https://api.github.com/users/${login}`, {
       headers: ghHeaders(),
@@ -73,16 +76,14 @@ async function fetchProfile(
 
 async function getContributors(): Promise<Person[]> {
   try {
-    const res = await fetch(
-      `https://api.github.com/repos/${REPO}/contributors?per_page=100`,
-      { headers: ghHeaders(), next: { revalidate: 3600 } }
-    );
+    const res = await fetch(`https://api.github.com/repos/${REPO}/contributors?per_page=100`, {
+      headers: ghHeaders(),
+      next: { revalidate: 3600 },
+    });
     if (!res.ok) return [];
 
     const list = (await res.json()) as GHContributor[];
-    const humans = list
-      .filter((c) => c.type !== "Bot" && !c.login.endsWith("[bot]"))
-      .slice(0, 24);
+    const humans = list.filter((c) => c.type !== "Bot" && !c.login.endsWith("[bot]")).slice(0, 24);
 
     // Make sure featured contributors appear even if they're not committers yet.
     const present = new Set(humans.map((c) => c.login.toLowerCase()));
@@ -112,8 +113,7 @@ async function getContributors(): Promise<Person[]> {
     );
 
     // Pin certain logins to the end; everyone else keeps contribution order.
-    const isPinned = (p: Person) =>
-      PIN_LAST.some((l) => l.toLowerCase() === p.login.toLowerCase());
+    const isPinned = (p: Person) => PIN_LAST.some((l) => l.toLowerCase() === p.login.toLowerCase());
     const head = people.filter((p) => !isPinned(p));
     const tail = PIN_LAST.map((l) =>
       people.find((p) => p.login.toLowerCase() === l.toLowerCase())
@@ -175,7 +175,10 @@ export default async function ContributorsPage() {
           </h1>
           <p className="lede" style={{ marginBottom: 36 }}>
             Banana Stand is open source. This list is pulled live from the{" "}
-            <a href={`${GITHUB_URL}/graphs/contributors`} style={{ borderBottom: "1px solid var(--border)" }}>
+            <a
+              href={`${GITHUB_URL}/graphs/contributors`}
+              style={{ borderBottom: "1px solid var(--border)" }}
+            >
               GitHub repo
             </a>
             — every merged contribution shows up here.
@@ -185,9 +188,12 @@ export default async function ContributorsPage() {
             <div className="card feature" style={{ maxWidth: 560 }}>
               <h3 style={{ marginBottom: 6 }}>Couldn&apos;t load contributors right now</h3>
               <p className="muted">
-                GitHub didn&apos;t respond (or rate-limited us). Refresh in a
-                moment, or see the full list on{" "}
-                <a href={`${GITHUB_URL}/graphs/contributors`} style={{ borderBottom: "1px solid var(--border)" }}>
+                GitHub didn&apos;t respond (or rate-limited us). Refresh in a moment, or see the
+                full list on{" "}
+                <a
+                  href={`${GITHUB_URL}/graphs/contributors`}
+                  style={{ borderBottom: "1px solid var(--border)" }}
+                >
                   GitHub
                 </a>
                 .
@@ -226,8 +232,8 @@ export default async function ContributorsPage() {
             <span className="eyebrow">Roadmap</span>
             <h2 style={{ marginBottom: 10 }}>What&apos;s next.</h2>
             <p className="muted" style={{ maxWidth: "54ch", marginBottom: 32 }}>
-              Where the project is headed. Want to take one on? Open an issue or a
-              PR — these are great places to start.
+              Where the project is headed. Want to take one on? Open an issue or a PR — these are
+              great places to start.
             </p>
             <div className="grid-2">
               {ROADMAP.map((item) => (

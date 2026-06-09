@@ -59,7 +59,9 @@ export default function DemoImage({
       {status === "loading" && <div className="shot-shimmer" aria-hidden="true" />}
       {status === "error" && (
         <div className="shot-warming">
-          <span aria-hidden="true" style={{ fontSize: "1.4rem" }}>🍌</span>
+          <span aria-hidden="true" style={{ fontSize: "1.4rem" }}>
+            🍌
+          </span>
           <span>Warming up — generated on first load. Refresh in a moment.</span>
         </div>
       )}

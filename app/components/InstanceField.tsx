@@ -22,11 +22,7 @@ export default function InstanceField() {
           aria-describedby="instance-hint"
         />
         {isCustom && (
-          <button
-            type="button"
-            className="btn btn-ghost"
-            onClick={() => setInput("")}
-          >
+          <button type="button" className="btn btn-ghost" onClick={() => setInput("")}>
             Reset
           </button>
         )}

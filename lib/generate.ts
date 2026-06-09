@@ -48,7 +48,9 @@ function getClient(): GoogleGenAI {
   const location = process.env.VERTEX_LOCATION ?? "us-central1";
 
   if (!project) {
-    throw new Error("No project id (set GOOGLE_CLOUD_PROJECT or include project_id in credentials)");
+    throw new Error(
+      "No project id (set GOOGLE_CLOUD_PROJECT or include project_id in credentials)"
+    );
   }
 
   return new GoogleGenAI({
@@ -95,7 +97,9 @@ export async function generateImage(
     } catch (err) {
       if (attempt < maxAttempts && isRetryable(err)) {
         const delay = Math.min(1000 * 2 ** (attempt - 1), 8000) + Math.random() * 500;
-        console.warn(`[generate] retryable error (attempt ${attempt}/${maxAttempts}), waiting ${Math.round(delay)}ms`);
+        console.warn(
+          `[generate] retryable error (attempt ${attempt}/${maxAttempts}), waiting ${Math.round(delay)}ms`
+        );
         await sleep(delay);
         continue;
       }

@@ -97,7 +97,14 @@ export async function generateAndStore(req: ResolvedRequest): Promise<PipelineRe
   const imageBuffer = await generateImage(fullPrompt, req.width, req.height, req.fmt, req.quality);
   const url = await storeBlob(req.pathname, imageBuffer, mimeType(req.fmt));
 
-  return { url, cached: false, width: req.width, height: req.height, model: req.model, id: req.hash };
+  return {
+    url,
+    cached: false,
+    width: req.width,
+    height: req.height,
+    model: req.model,
+    id: req.hash,
+  };
 }
 
 /**
@@ -110,7 +117,14 @@ export async function runPipeline(params: PipelineParams): Promise<PipelineResul
 
   const cachedUrl = await lookupCache(req);
   if (cachedUrl) {
-    return { url: cachedUrl, cached: true, width: req.width, height: req.height, model: req.model, id: req.hash };
+    return {
+      url: cachedUrl,
+      cached: true,
+      width: req.width,
+      height: req.height,
+      model: req.model,
+      id: req.hash,
+    };
   }
 
   return generateAndStore(req);

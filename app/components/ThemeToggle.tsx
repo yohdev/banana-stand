@@ -10,8 +10,7 @@ export default function ThemeToggle() {
   // Sync from whatever the no-flash bootstrap already put on <html>.
   useEffect(() => {
     const current =
-      (document.documentElement.getAttribute("data-theme") as "light" | "dark") ||
-      "light";
+      (document.documentElement.getAttribute("data-theme") as "light" | "dark") || "light";
     setTheme(current);
   }, []);
 

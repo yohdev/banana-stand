@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { INSTANCE_KEY, normalizeInstance } from "../instance";
 
 type InstanceContextValue = {
@@ -65,9 +58,7 @@ export function InstanceProvider({
     [input, setInput, normalized, defaultInstance]
   );
 
-  return (
-    <InstanceContext.Provider value={value}>{children}</InstanceContext.Provider>
-  );
+  return <InstanceContext.Provider value={value}>{children}</InstanceContext.Provider>;
 }
 
 export function useInstance(): InstanceContextValue {
