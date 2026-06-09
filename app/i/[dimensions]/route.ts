@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { resolveRequest, lookupCache, generateAndStore, ValidationError } from "@/lib/pipeline";
+import { logError } from "@/lib/log";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -77,7 +78,7 @@ export async function GET(
     if (err instanceof ValidationError) {
       return jsonError(err.message, 400);
     }
-    console.error("[/i] generation error:", err);
+    logError("/i", err);
     return jsonError("Image generation failed", 502);
   }
 }

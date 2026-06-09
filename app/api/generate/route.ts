@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { resolveRequest, lookupCache, generateAndStore, ValidationError } from "@/lib/pipeline";
+import { logError } from "@/lib/log";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -70,7 +71,7 @@ export async function POST(req: NextRequest) {
     if (err instanceof ValidationError) {
       return NextResponse.json({ error: err.message }, { status: 400 });
     }
-    console.error("[/api/generate] error:", err);
+    logError("/api/generate", err);
     return NextResponse.json({ error: "Image generation failed" }, { status: 502 });
   }
 }
