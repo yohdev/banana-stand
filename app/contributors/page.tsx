@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import ThemeToggle from "../components/ThemeToggle";
 
 // Pull live from GitHub on request (no network needed at build time).
@@ -151,13 +152,13 @@ export default async function ContributorsPage() {
     <>
       <header className="nav">
         <div className="container nav-inner">
-          <a href="/" className="brand">
+          <Link href="/" className="brand">
             <span aria-hidden="true">🍌</span> Banana Stand
-          </a>
+          </Link>
           <nav className="nav-links">
-            <a className="navlink" href="/">
+            <Link className="navlink" href="/">
               Home
-            </a>
+            </Link>
             <a className="navlink" href={GITHUB_URL}>
               GitHub
             </a>
@@ -262,9 +263,9 @@ export default async function ContributorsPage() {
                 <span aria-hidden="true">🍌</span> Banana Stand — MIT licensed
               </span>
               <span style={{ display: "flex", gap: 18 }}>
-                <a href="/">Home</a>
+                <Link href="/">Home</Link>
                 <a href={GITHUB_URL}>GitHub</a>
-                <a href="/docs">Docs</a>
+                <Link href="/docs">Docs</Link>
               </span>
             </div>
           </div>

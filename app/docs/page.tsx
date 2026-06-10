@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import ThemeToggle from "../components/ThemeToggle";
 import CopyButton from "../components/CopyButton";
 
@@ -65,6 +66,10 @@ export default function DocsPage() {
   const [base, setBase] = useState("https://your-instance.vercel.app");
 
   useEffect(() => {
+    // Client-only value: the live origin isn't known during SSR, so we read it
+    // after mount. Setting state here is the correct pattern (avoids a
+    // hydration mismatch), hence the scoped disable.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setBase(window.location.origin);
   }, []);
 
@@ -72,19 +77,19 @@ export default function DocsPage() {
     <>
       <header className="nav">
         <div className="container nav-inner">
-          <a href="/" className="brand">
+          <Link href="/" className="brand">
             <span aria-hidden="true">🍌</span> Banana Stand
-          </a>
+          </Link>
           <nav className="nav-links">
-            <a className="navlink" href="/">
+            <Link className="navlink" href="/">
               Home
-            </a>
+            </Link>
             <a className="navlink" href={GITHUB_URL}>
               GitHub
             </a>
-            <a className="btn btn-accent keep" href="/contributors">
+            <Link className="btn btn-accent keep" href="/contributors">
               Contributors
-            </a>
+            </Link>
             <ThemeToggle />
           </nav>
         </div>

@@ -27,9 +27,11 @@ export function InstanceProvider({
   const [input, setInputState] = useState("");
 
   // Restore a saved instance after mount (server renders with the default).
+  // localStorage is client-only, so this mount-time setState is correct.
   useEffect(() => {
     try {
       const saved = localStorage.getItem(INSTANCE_KEY);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (saved) setInputState(saved);
     } catch {
       /* private mode — session only */

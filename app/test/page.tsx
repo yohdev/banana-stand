@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import ThemeToggle from "../components/ThemeToggle";
 import CopyButton from "../components/CopyButton";
 
@@ -87,16 +88,16 @@ export default function TestPage() {
     <>
       <header className="nav">
         <div className="container nav-inner">
-          <a href="/" className="brand">
+          <Link href="/" className="brand">
             <span aria-hidden="true">🍌</span> Banana Stand
-          </a>
+          </Link>
           <nav className="nav-links">
-            <a className="navlink" href="/">
+            <Link className="navlink" href="/">
               Home
-            </a>
-            <a className="navlink" href="/docs">
+            </Link>
+            <Link className="navlink" href="/docs">
               Docs
-            </a>
+            </Link>
             <ThemeToggle />
           </nav>
         </div>
@@ -238,8 +239,8 @@ export default function TestPage() {
       <footer className="footer" style={{ marginTop: 40 }}>
         <div className="container">
           <span style={{ display: "flex", gap: 18 }}>
-            <a href="/">Home</a>
-            <a href="/docs">Docs</a>
+            <Link href="/">Home</Link>
+            <Link href="/docs">Docs</Link>
             <a href={GITHUB_URL}>GitHub</a>
           </span>
         </div>
