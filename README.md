@@ -197,7 +197,17 @@ Banana Stand is open source and contributions are welcome. The current contribut
 
 ### In-app feedback form
 
-`/feedback` lets users open a GitHub issue (labeled `feedback`) directly from the site. It's **disabled by default** — `POST /api/feedback` returns `503` until you set `GITHUB_FEEDBACK_TOKEN` (a token with `issues:write` on `FEEDBACK_REPO`, which defaults to `yohdev/banana-stand`). A honeypot field and length/type validation guard against spam. Keep this token separate from the read-only `GITHUB_TOKEN` used by `/contributors`.
+`/feedback` lets users open a GitHub issue (labeled `feedback`) directly from the site. It's **disabled by default** — `POST /api/feedback` returns `503` until you provide a write-scoped token. A honeypot field and length/type validation guard against spam.
+
+**Enabling it (token setup):**
+
+1. Generate a GitHub token with permission to create issues in `FEEDBACK_REPO` (defaults to `yohdev/banana-stand`):
+   - **Fine-grained PAT** (recommended) — [github.com/settings/tokens?type=beta](https://github.com/settings/personal-access-tokens/new): set **Resource owner** to the org/user that owns the repo, **Repository access → Only select repositories → `banana-stand`**, and under **Repository permissions** set **Issues → Read and write**. (That permission implies the required `metadata: read`.)
+   - **Classic PAT** alternative — [github.com/settings/tokens/new](https://github.com/settings/tokens/new): scope `public_repo` for a public repo, or `repo` for a private one.
+2. Add it to your deploy as `GITHUB_FEEDBACK_TOKEN` (mark it **Sensitive** in Vercel → Settings → Environment Variables → Production), then redeploy.
+3. Keep this **separate** from the read-only `GITHUB_TOKEN` used by `/contributors` — the feedback token needs write access, so it shouldn't be reused for read-only calls.
+
+To open issues in a different repo, set `FEEDBACK_REPO=owner/repo` and ensure the token has access to it.
 
 ---
 
