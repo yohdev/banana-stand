@@ -411,6 +411,7 @@ curl -H "X-Gen-Token: $GEN_TOKEN" \\
                 <a href={GITHUB_URL}>GitHub</a>
                 <a href="/docs">Docs</a>
                 <a href="/contributors">Contributors</a>
+                <a href="/feedback">Feedback</a>
               </span>
             </div>
           </div>
