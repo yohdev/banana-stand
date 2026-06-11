@@ -56,7 +56,31 @@ export async function POST(req: NextRequest) {
     });
 
     if (!res.ok) {
-      logError("/api/feedback", { status: res.status, message: "GitHub issue create failed" });
+      // Surface GitHub's actual reason (server logs only) to make token/scope
+      // problems diagnosable instead of an opaque "Unknown error".
+      const detail = await res.text().catch(() => "");
+      let ghMessage = "";
+      try {
+        ghMessage = (JSON.parse(detail) as { message?: string }).message ?? "";
+      } catch {
+        ghMessage = detail.slice(0, 200);
+      }
+      console.error(
+        `[/api/feedback] GitHub issue create failed (status ${res.status}): ${ghMessage || "no message"}`
+      );
+
+      // 401/403 almost always means the token lacks issues:write on FEEDBACK_REPO.
+      if (res.status === 401 || res.status === 403) {
+        return NextResponse.json(
+          {
+            error:
+              "The feedback token isn't authorized to create issues in this repo. Check that GITHUB_FEEDBACK_TOKEN has Issues: write access to " +
+              REPO +
+              ".",
+          },
+          { status: 502 }
+        );
+      }
       return NextResponse.json({ error: "Could not submit feedback right now." }, { status: 502 });
     }
 
